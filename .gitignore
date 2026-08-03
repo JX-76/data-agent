@@ -52,6 +52,7 @@ TEST_REPORT_COMPLETE.md
 # Local execution state and generated outputs. These may include audit traces,
 # user/session data, prompts, model responses, or large reproducible reports.
 .data_agent_provider_config.json
+.data_agent_workspace_outputs/
 artifacts/
 sessions/
 flywheel_data/

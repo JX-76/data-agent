@@ -363,6 +363,12 @@ async def validate_request(request: Request, call_next):
 from bi_api import router as bi_router
 app.include_router(bi_router)
 try:
+    from workspace_api import router as workspace_router
+    app.include_router(workspace_router)
+    logger.info("workspace_router_mounted")
+except Exception as e:
+    logger.warning("workspace_router_not_mounted", error=str(e))
+try:
     from release_api import router as release_router
     if release_router is not None:
         app.include_router(release_router)

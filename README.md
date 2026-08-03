@@ -109,6 +109,16 @@ python -m uvicorn src.server:app --host 127.0.0.1 --port 8001
 3. 回到对话页面，输入例如：`昨天 GMV 是多少？` 或 `最近 7 天各渠道的订单量`；
 4. 查看返回的分析结果；如提示缺少 Key，请检查网页设置或本地 `.env`，然后重新测试连接。
 
+### 6. 受控项目工作区与执行流
+
+右上角 **“工作区 / 执行流”** 提供一个受控的工程协作视图：
+
+- 浏览、预览和下载当前项目根目录下的普通文本文件；`.env`、密钥、`.git`、虚拟环境、缓存及路径穿越请求默认拒绝。
+- 查看本会话的模式切换和活动事件；模式是 `Plan`、`Act`、`Auto`、`Exit`。当前版本只记录模式与活动，**不会**因此授予模型任意 Shell、Git 或文件写入权限。
+- 后端或经批准的工作流可创建“更新轮次”，把声明的输出复制为不可变版本，再通过界面下载；原文件后续改变不会影响已交付版本。
+
+工作区根目录默认是项目目录；生产环境应显式设置 `DATA_AGENT_WORKSPACE_ROOT` 为隔离的、最小权限的工作目录。工作区活动与版本化输出当前是进程内控制面，服务重启后不会恢复；它不是生产级多租户审计存储，也未接入 GitHub/GitLab 或远程执行器。
+
 > 本地启动默认只监听 `127.0.0.1`。生产部署不应使用本地 JSON 文件保存密钥，应接入 KMS、Secret Manager 等受管密钥服务。
 
 ## 其他使用方式
@@ -177,6 +187,11 @@ print(result["diagnosis"]["overall_severity"])  # 诊断
 | `POST` | `/sessions/{id}/resume` | 恢复暂停的会话 |
 | `DELETE` | `/sessions/{id}` | 删除会话 |
 | `DELETE` | `/cache` | 清除查询缓存 |
+| `GET` | `/api/workspace/tree` | 受控项目目录浏览 |
+| `GET` | `/api/workspace/file` | 受控文本文件预览 |
+| `GET` | `/api/workspace/download` | 受控原文件下载 |
+| `GET/POST` | `/api/workspace/activity`、`/mode` | 会话活动流与模式切换 |
+| `GET/POST` | `/api/workspace/rounds` | 更新轮次与版本化输出登记 |
 
 ## 配置
 
