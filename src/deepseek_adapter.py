@@ -12,6 +12,7 @@ from __future__ import unicode_literals
 import json
 import os
 import time
+from system_prompt_contract import build_presentation_assist_prompt, prompt_metadata
 try:
     from urllib.error import HTTPError, URLError
     from urllib.request import Request, urlopen
@@ -145,7 +146,7 @@ class DeepSeekAdapter(object):
         data = self._request_json("/chat/completions", {
             "model": self.model,
             "messages": [
-                {"role": "system", "content": "你必须遵守用户提供的已验证摘要边界。"},
+                {"role": "system", "content": build_presentation_assist_prompt("DeepSeek")},
                 {"role": "user", "content": prompt},
             ],
             "temperature": 0.2,
@@ -160,8 +161,10 @@ class DeepSeekAdapter(object):
             raise DeepSeekError("empty_response", "DeepSeek API 没有返回可展示的说明。")
         if any(item in lowered for item in _FORBIDDEN_OUTPUT):
             raise DeepSeekError("unsafe_response", "DeepSeek API 返回了不适合公开展示的内容。")
+        system_prompt = build_presentation_assist_prompt("DeepSeek")
         return {"contract": "deepseek_presentation_assist_v1", "provider": "deepseek", "model": self.model,
                 "status": "ok", "text": text[:700], "latency_ms": int((time.time() - started) * 1000),
+                "prompt_metadata": prompt_metadata("presentation_assist", system_prompt),
                 "limitations": ["该说明只用于阅读引导，不是事实、证据、SQL 或执行结果。"]}
 
 

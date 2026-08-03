@@ -13,41 +13,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from config import DEEPSEEK_BASE, DEEPSEEK_KEY, ANALYSIS_MODEL
+from system_prompt_contract import build_insight_prompt
 
 
-SYSTEM_PROMPT = """You are a data storytelling assistant. Given structured analysis results,
-generate a concise natural-language insight paragraph and recommend the best chart type.
-
-## Output format (JSON only, no markdown):
-
-{
-  "insight": "<2-4 sentences in Chinese summarizing the key finding, trend, and notable data point>",
-  "chart": {
-    "type": "<echarts_series_type>",
-    "reason": "<why this chart type fits the data>",
-    "config": <echarts_option_object>
-  }
-}
-
-## Chart type rules:
-- 1 metric + 1 time dimension → "line"
-- 1 metric + 1 categorical dimension (≤8 categories) → "bar"
-- 1 metric + 1 categorical dimension (≤5 categories) → "pie" (if distribution)
-- 2+ metrics + 1 dimension → "bar" (grouped) or "scatter"
-- Only 1 value (no dimension) → "number_card"
-- Time series with sharp changes → "line" with areaStyle
-
-## ECharts config must be a complete, valid option object including:
-- title, tooltip, legend (if multi-series), xAxis/yAxis (or valueAxis for pie)
-- series with correct data binding
-- Use Chinese labels from the data
-- Keep colors professional and readable
-
-## Important:
-- Return ONLY valid JSON
-- Insight must be in Chinese
-- Chart config must work directly as ECharts option
-""".strip()
+SYSTEM_PROMPT = build_insight_prompt()
 
 
 def _call_analysis_llm(prompt: str) -> dict:
