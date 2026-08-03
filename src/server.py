@@ -369,6 +369,12 @@ try:
 except Exception as e:
     logger.warning("workspace_router_not_mounted", error=str(e))
 try:
+    from enterprise_data_source_api import router as enterprise_data_source_router
+    app.include_router(enterprise_data_source_router)
+    logger.info("enterprise_data_source_router_mounted")
+except Exception as e:
+    logger.warning("enterprise_data_source_router_not_mounted", error=str(e))
+try:
     from release_api import router as release_router
     if release_router is not None:
         app.include_router(release_router)
