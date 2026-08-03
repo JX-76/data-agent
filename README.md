@@ -25,35 +25,93 @@
                                           ╚═══════════════╝
 ```
 
-## 快速开始
+## 安装与首次使用
 
-### 本地 Web 方式（推荐给 GitHub 下载用户）
+下面的步骤适用于从 GitHub 首次下载项目的用户。推荐使用 **Python 3.10 或更高版本**、Git，以及独立虚拟环境；请勿在项目文件、终端历史或 Git 提交中写入真实 API Key。
+
+### 1. 下载项目并创建虚拟环境
+
+```bash
+# 克隆项目并进入目录
+git clone https://github.com/JX-76/data-agent.git
+cd data-agent
+
+# Windows PowerShell
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+# macOS / Linux（二选一；不要与上面的 Windows 命令同时执行）
+# python3 -m venv .venv
+# source .venv/bin/activate
+```
+
+若 Windows PowerShell 因执行策略阻止激活，可改用 CMD：
 
 ```bat
-REM Windows：首次运行会自动从 .env.example 复制 .env（不含任何真实密钥）
+.venv\Scripts\activate.bat
+```
+
+### 2. 安装依赖
+
+```bash
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+### 3. 创建本地配置（不填入仓库）
+
+复制模板后，选择以下任一种方式配置你的 DeepSeek API Key：
+
+```bash
+# macOS / Linux
+cp .env.example .env
+
+# Windows CMD
+# copy .env.example .env
+
+# Windows PowerShell
+# Copy-Item .env.example .env
+```
+
+- **推荐：在网页中填写。** 先按下一步启动，再点击右上角 **“模型/API 设置”**，填写自己的 Key。
+- **或写入本地 `.env`。** 打开 `.env` 后设置 `DEEPSEEK_API_KEY=你的Key`；可保留默认 `DEEPSEEK_BASE_URL=https://api.deepseek.com` 与 `DEEPSEEK_MODEL=deepseek-chat`。
+
+`.env` 和网页保存的 `.data_agent_provider_config.json` 均被 `.gitignore` 排除；页面和接口只展示脱敏 Key。配置优先级为：**网页本地配置 > `.env` / 环境变量 > 缺省安全降级**。
+
+### 4. 启动并打开网页
+
+**Windows 一键启动（推荐）**：
+
+```bat
 scripts\start_local.bat
 ```
 
-启动后打开：`http://127.0.0.1:8000/`。
+该脚本会在 `.env` 不存在时从 `.env.example` 创建模板，并在缺少运行依赖时安装 `requirements.txt`。启动成功后访问：<http://127.0.0.1:8000/>。
 
-首次使用请点击页面右上角 **“模型/API 设置”**，填写你自己的 DeepSeek API Key。Key 只会保存在当前机器的本地文件 `.data_agent_provider_config.json`，该文件已被 `.gitignore` 排除，不会进入 Git 提交；后端接口和页面也不会回显明文 Key。
-
-也可以手工配置：
+其他系统或手动启动方式：
 
 ```bash
-# 1) 复制模板。模板只保留空槽位，不包含真实 API Key
-cp .env.example .env
-
-# 2) 在 .env 中填入自己的值，或保持 DEEPSEEK_API_KEY 为空并使用页面配置
-DEEPSEEK_API_KEY=
-DEEPSEEK_BASE_URL=https://api.deepseek.com
-DEEPSEEK_MODEL=deepseek-chat
-
-# 3) 启动服务
 python -m uvicorn src.server:app --host 127.0.0.1 --port 8000
 ```
 
-配置优先级：页面保存的本地 Provider 配置 > `.env` / 环境变量 > 缺省安全降级。生产部署不应直接使用本地 JSON 存储密钥，应替换为 KMS / Secret Manager 等托管方案。
+保持此终端运行；使用 `Ctrl+C` 停止服务。若 8000 端口已被占用，可改用其他端口，例如：
+
+```bash
+python -m uvicorn src.server:app --host 127.0.0.1 --port 8001
+```
+
+然后访问 <http://127.0.0.1:8001/>。
+
+### 5. 完成首次查询
+
+1. 打开网页并点击右上角 **“模型/API 设置”**；
+2. 填入自己的 DeepSeek API Key，按“保存”后可使用“测试连接”确认配置；
+3. 回到对话页面，输入例如：`昨天 GMV 是多少？` 或 `最近 7 天各渠道的订单量`；
+4. 查看返回的分析结果；如提示缺少 Key，请检查网页设置或本地 `.env`，然后重新测试连接。
+
+> 本地启动默认只监听 `127.0.0.1`。生产部署不应使用本地 JSON 文件保存密钥，应接入 KMS、Secret Manager 等受管密钥服务。
+
+## 其他使用方式
 
 ### CLI
 
