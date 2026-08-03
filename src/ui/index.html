@@ -59,7 +59,7 @@ button { cursor: pointer; } button, textarea, select { font: inherit; }
     <section class="conversation" id="conversation">
       <div class="welcome" id="welcome">
         <h2>有什么数据问题，交给我分析。</h2>
-        <p>支持指标查询、趋势对比、渠道归因、异常诊断和多轮追问。结果中的 SQL、质量提示与注意事项均可展开查看。</p>
+        <p>首次从 GitHub 下载使用时，请先点击右上角“模型/API 设置”填写你自己的 API Key；Key 只保存在本机，不会在页面或接口中明文回显。支持指标查询、趋势对比、渠道归因、异常诊断和多轮追问。</p>
         <div class="capabilities"><div class="cap"><b>语义指标</b><span>按受治理口径生成可预检 SQL。</span></div><div class="cap"><b>可解释报告</b><span>汇总表格、图表、风险和下一步建议。</span></div><div class="cap"><b>安全多轮</b><span>会话上下文隔离，敏感信息默认阻断。</span></div></div>
       </div>
       <div class="messages" id="messages"></div>
@@ -95,7 +95,7 @@ async function submitQuery(){const input=$('queryInput'),query=input.value.trim(
 async function resumeChoice(choiceId){if(!sessionId)return;const typingId=addTyping();try{const data=await api('/api/resume',{method:'POST',body:JSON.stringify({session_id:sessionId,choice_id:choiceId})});$(typingId).remove();$('messages').insertAdjacentHTML('beforeend',renderAssistant(data));scrollBottom()}catch(error){$(typingId).remove();alert('恢复澄清失败：'+error.message)}}
  function newChat(){sessionId='';localStorage.removeItem('data_agent_release_session');$('sessionBadge').textContent='未创建会话';$('messages').innerHTML='';$('welcome').classList.remove('hidden');$('sessions').innerHTML='<button class="side-item active">新建会话</button>';$('queryInput').focus()}
  function providerState(text,isError=false){const el=$('providerState');el.textContent=text||'';el.style.color=isError?'var(--danger)':'var(--muted)'}
- async function loadProviderSettings(){try{const data=await api('/api/provider-config');$('providerBaseUrl').value=data.base_url||'';$('providerModel').value=data.model||'';providerState(data.status==='missing_api_key'?'尚未配置 API Key。':`当前来源：${data.source||'unknown'}；Key：${data.masked_key||'未配置'}`)}catch(e){providerState(e.message,true)}}
+ async function loadProviderSettings(){try{const data=await api('/api/provider-config');$('providerBaseUrl').value=data.base_url||'';$('providerModel').value=data.model||'';providerState(data.status==='missing_api_key'?'尚未配置 API Key。请填写你自己的 Key；本地配置不会提交到 Git，也不会明文回显。':`当前来源：${data.source||'unknown'}；Key：${data.masked_key||'未配置'}`)}catch(e){providerState(e.message,true)}}
  function toggleProviderSettings(){const panel=$('providerSettings');panel.classList.toggle('hidden');if(!panel.classList.contains('hidden'))loadProviderSettings()}
  async function saveProviderSettings(){const api_key=$('providerApiKey').value.trim();try{const data=await api('/api/provider-config',{method:'POST',body:JSON.stringify({provider:'deepseek',api_key:api_key||null,base_url:$('providerBaseUrl').value.trim()||null,model:$('providerModel').value.trim()||null})});$('providerApiKey').value='';providerState(`已保存；Key：${data.masked_key||'已保留'}`)}catch(e){providerState(e.message,true)}}
  async function validateProviderSettings(){try{providerState('正在测试连接…');const data=await api('/api/provider-config/validate',{method:'POST',body:'{}'});providerState(`连接成功；Key：${data.masked_key||'已配置'}`)}catch(e){providerState(e.message,true)}}

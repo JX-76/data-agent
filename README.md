@@ -27,6 +27,34 @@
 
 ## 快速开始
 
+### 本地 Web 方式（推荐给 GitHub 下载用户）
+
+```bat
+REM Windows：首次运行会自动从 .env.example 复制 .env（不含任何真实密钥）
+scripts\start_local.bat
+```
+
+启动后打开：`http://127.0.0.1:8000/`。
+
+首次使用请点击页面右上角 **“模型/API 设置”**，填写你自己的 DeepSeek API Key。Key 只会保存在当前机器的本地文件 `.data_agent_provider_config.json`，该文件已被 `.gitignore` 排除，不会进入 Git 提交；后端接口和页面也不会回显明文 Key。
+
+也可以手工配置：
+
+```bash
+# 1) 复制模板。模板只保留空槽位，不包含真实 API Key
+cp .env.example .env
+
+# 2) 在 .env 中填入自己的值，或保持 DEEPSEEK_API_KEY 为空并使用页面配置
+DEEPSEEK_API_KEY=
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-chat
+
+# 3) 启动服务
+python -m uvicorn src.server:app --host 127.0.0.1 --port 8000
+```
+
+配置优先级：页面保存的本地 Provider 配置 > `.env` / 环境变量 > 缺省安全降级。生产部署不应直接使用本地 JSON 存储密钥，应替换为 KMS / Secret Manager 等托管方案。
+
 ### CLI
 
 ```bash
@@ -94,14 +122,30 @@ print(result["diagnosis"]["overall_severity"])  # 诊断
 
 ## 配置
 
+仓库只提交 `.env.example`，不提交 `.env` 或任何本地 API Key。`.env.example` 是自由配置模板，默认留空 DeepSeek Key：
+
 ```bash
-# .env 文件
-DATA_AGENT_API_KEY=your-secret-key    # API 密钥（不设置则不启用认证）
-DATA_AGENT_AUTH=true                  # 是否启用认证
-DEEPSEEK_API_KEY=sk-xxx               # DeepSeek API（可选，不设置使用正则路由）
-LANGFUSE_PUBLIC_KEY=pk-xxx            # Langfuse（可选）
-LANGFUSE_SECRET_KEY=sk-xxx
+# .env 文件，本地自行创建；不要提交到 Git
+DATA_AGENT_HOST=127.0.0.1
+DATA_AGENT_PORT=8000
+# DATA_AGENT_AUTH=false
+# DATA_AGENT_API_KEY=replace-with-your-own-local-api-key
+DEEPSEEK_API_KEY=                    # 可留空，改用页面“模型/API 设置”填写
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-chat
+LANGFUSE_PUBLIC_KEY=                 # Langfuse（可选）
+LANGFUSE_SECRET_KEY=
 ```
+
+模型 API Key 的推荐配置方式：
+
+1. GitHub 下载/克隆后复制 `.env.example` 为 `.env`；
+2. 启动服务；
+3. 在网页右上角 **“模型/API 设置”** 中填写自己的 Key；
+4. Key 将保存在本机 `.data_agent_provider_config.json`，接口只返回脱敏值；
+5. 删除本地配置后自动回退到 `.env` / 环境变量。
+
+安全边界：`.env`、`.env.*`、`.data_agent_provider_config.json` 均被 `.gitignore` 排除。不要把自己的 API Key 写入 README、脚本、测试、Dockerfile 或任何会提交到 GitHub 的文件。
 
 ## 语义层
 
