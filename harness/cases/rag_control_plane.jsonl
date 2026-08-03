@@ -1,0 +1,4 @@
+{"case_id":"p2_rrf_trace","phase":"P2","contract":"rag_harness_case_v1","scenario":"sparse+dense hybrid retrieval keeps raw ranks, RRF score, rerank score, document version and indexed_at","expected":"trace.contract=hybrid_retrieval_trace_v1"}
+{"case_id":"p2_incremental_diff","phase":"P2","contract":"rag_harness_case_v1","scenario":"same content deduplicates; changed line creates only changed chunk embedding job candidate","expected":"deduplicated then changed_chunks=1"}
+{"case_id":"p2_acl_revocation","phase":"P2","contract":"rag_harness_case_v1","scenario":"revoked document is blocked by serving metadata filter immediately before physical cleanup","expected":"acl_leakage_count=0"}
+{"case_id":"p2_pending_freshness","phase":"P2","contract":"rag_harness_case_v1","scenario":"pending document is not served until index receipt exists","expected":"fallback=evidence_limited before indexed"}

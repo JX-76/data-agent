@@ -1,0 +1,4 @@
+{"id":"rag_001","query":"GMV 怎么计算","expected_chunk_ids":["metric:sandbox_gmv#definition"],"access_context":{"role":"analyst","tenant_id":"global"}}
+{"id":"rag_002","query":"ROI 投产比怎么算","expected_chunk_ids":["metric:sandbox_roi#definition"],"access_context":{"role":"analyst","tenant_id":"global"}}
+{"id":"rag_003","query":"GMV 为什么下滑，同时看 ROI 投产比","expected_chunk_ids":["scenario:gmv_diagnosis","metric:sandbox_roi#definition"],"access_context":{"role":"analyst","tenant_id":"global"}}
+{"id":"rag_004","query":"GMV 口径","expected_chunk_ids":[],"expect_no_answer":true,"access_context":{"role":"guest","tenant_id":"global"}}

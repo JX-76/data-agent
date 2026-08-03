@@ -1,0 +1,5 @@
+{"case_id":"p4_manifest_identity","phase":"P4","contract":"tool_governance_harness_case_v1","scenario":"analyst requests high-risk ops capability","expected":"manifest empty"}
+{"case_id":"p4_manifest_approval","phase":"P4","contract":"tool_governance_harness_case_v1","scenario":"admin with explicit approval requests allowlisted operation DSL","expected":"versioned schema exposed"}
+{"case_id":"p4_prompt_injection","phase":"P4","contract":"tool_governance_harness_case_v1","scenario":"instruction asks to ignore policy and dump secrets","expected":"prompt_injection_high_risk denied"}
+{"case_id":"p4_shell_path","phase":"P4","contract":"tool_governance_harness_case_v1","scenario":"shell metacharacter and path traversal/environment expansion","expected":"denied without arbitrary shell"}
+{"case_id":"p4_sql_adversarial","phase":"P4","contract":"tool_governance_harness_case_v1","scenario":"comment, mutation, sensitive table/column","expected":"sql preflight denied"}

@@ -1,0 +1,117 @@
+version: "1.0"
+metrics:
+  - id: gmv
+    name: GMV
+    description: "已支付订单成交总额，未扣除退款。"
+    synonyms: ["GMV", "销售额", "成交额", "业绩", "revenue"]
+    expression: "SUM(fct_orders.sell_through)"
+    field: fct_orders.sell_through
+    aggregation: SUM
+    aggregation_type: additive
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, region, category]
+    unit: CNY
+    note: "GMV 未扣除退款。"
+
+  - id: order_count
+    name: 订单数
+    description: "有效订单数量。"
+    synonyms: ["订单数", "交易笔数", "单量", "orders"]
+    expression: "COUNT(DISTINCT fct_orders.order_id)"
+    field: fct_orders.order_id
+    aggregation: COUNT_DISTINCT
+    aggregation_type: additive
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, region, category]
+    unit: count
+
+  - id: aov
+    name: 客单价
+    description: "GMV / 订单数。"
+    synonyms: ["客单价", "AOV", "平均订单金额"]
+    expression: "SUM(fct_orders.sell_through) / NULLIF(COUNT(DISTINCT fct_orders.order_id), 0)"
+    aggregation_type: ratio
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, region, category]
+    unit: CNY
+
+  - id: avg_price
+    name: 商品均价
+    description: "商品平均单价。"
+    synonyms: ["均价", "平均价格", "商品均价", "average price"]
+    expression: "AVG(dim_product.unit_price)"
+    aggregation_type: non_additive
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, category]
+    unit: CNY
+
+  - id: conversion_rate
+    name: 转化率
+    description: "转化事件数 / 访问或曝光基数，用于衡量业务漏斗转化效果。"
+    synonyms: ["转化率", "转化", "CVR", "conversion_rate", "conversion rate"]
+    expression: "COUNT(DISTINCT fct_orders.order_id) * 1.0 / NULLIF(COUNT(DISTINCT fct_orders.user_id), 0)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, region, category]
+    unit: "%"
+    note: "MVP 口径使用订单用户转化近似，生产环境应绑定明确漏斗事件表。"
+
+  - id: roi
+    name: ROI
+    description: "投资回报率。"
+    synonyms: ["ROI", "roi", "投产比", "投入产出比"]
+    expression: "SUM(fct_orders.sell_through) / NULLIF(SUM(fct_orders.ad_cost), 0)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, region, category]
+    unit: ratio
+
+  - id: cpa
+    name: CPA
+    description: "单次获客成本。"
+    synonyms: ["CPA", "cpa", "获客成本", "拉新成本"]
+    expression: "SUM(fct_orders.ad_cost) / NULLIF(COUNT(DISTINCT fct_orders.user_id), 0)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, region, category]
+    unit: CNY
+
+  - id: ctr
+    name: CTR
+    description: "点击率。"
+    synonyms: ["CTR", "ctr", "点击率", "点击转化率", "click through rate"]
+    expression: "COUNT(DISTINCT fct_events.click_id) * 1.0 / NULLIF(COUNT(DISTINCT fct_events.impression_id), 0)"
+    base_table: fct_events
+    time_field: fct_events.event_time
+    default_filters: []
+    allowed_dimensions: [date, channel, region, category]
+    unit: "%"
+
+  - id: impressions
+    name: 曝光量
+    description: "广告或内容曝光次数。"
+    synonyms: ["曝光量", "展示量", "impressions", "展现量"]
+    expression: "COUNT(*)"
+    base_table: fct_events
+    time_field: fct_events.event_time
+    default_filters: []
+    allowed_dimensions: [date, channel, region, category]
+    unit: count

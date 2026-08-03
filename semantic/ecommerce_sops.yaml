@@ -1,0 +1,97 @@
+version: "1.0"
+domain: ecommerce_sandbox
+sops:
+  - id: gmv_drop_diagnosis
+    title: "GMV 下滑诊断 SOP"
+    intents: [attribution, anomaly, root_cause, comparison]
+    trigger_terms: [GMV, 销售额, 成交额, 下滑, 下降, 异常, 原因]
+    required_metrics: [sandbox_gmv, net_gmv]
+    recommended_metrics: [order_count, aov, sandbox_roi]
+    required_dimensions: [date]
+    recommended_dimensions: [channel, region, category]
+    preconditions:
+      - "先确认分析时间范围和对比基期。"
+      - "确认用户问题中的 GMV 是否需要扣除退款；净收入问题必须使用 net_gmv。"
+    ordered_steps:
+      - "按日期查看 GMV 与对比期变化，确认异常发生时间。"
+      - "按渠道、区域、品类拆分变化贡献。"
+      - "将 GMV 拆为订单数与客单价，并检查退款。"
+      - "涉及投放渠道时查询 ROI 和广告成本。"
+      - "所有归因结论必须由查询结果验证；未验证项只能表述为待排查假设。"
+    recommended_tools: [sql_query, anomaly_detection, contribution_analysis]
+    caveats:
+      - "SOP 仅规定排查路径，不能证明某一渠道或因素是实际原因。"
+      - "活动、库存、履约等外部原因没有数据证据时不得写成已确认结论。"
+
+  - id: roi_review
+    title: "投放 ROI 与 CPA 复盘 SOP"
+    intents: [attribution, comparison, anomaly]
+    trigger_terms: [ROI, 投产比, CPA, 广告, 投放, 获客成本]
+    required_metrics: [sandbox_roi]
+    recommended_metrics: [sandbox_gmv, cpa, ctr, conversion_rate]
+    required_dimensions: [date, channel]
+    recommended_dimensions: [region]
+    preconditions:
+      - "确认 ad_cost 是否覆盖目标渠道和目标时间范围。"
+      - "非投放渠道可能没有广告成本，不得将空值解释为 ROI 为零。"
+    ordered_steps:
+      - "按日期和渠道比较 ROI、广告成本与 GMV。"
+      - "识别高成本低产出渠道，再查看 CPA、CTR、转化率。"
+      - "区分预算变化、流量变化和转化变化；每项需数据支持。"
+    recommended_tools: [sql_query, comparison_analysis, contribution_analysis]
+    caveats:
+      - "ROI 反映口径内投入产出，不能直接推断增量因果。"
+
+  - id: conversion_funnel
+    title: "转化率与漏斗分析 SOP"
+    intents: [funnel, attribution, anomaly]
+    trigger_terms: [转化率, CVR, 漏斗, 点击率, CTR, 曝光]
+    required_metrics: [conversion_rate]
+    recommended_metrics: [ctr, impressions, order_count]
+    required_dimensions: [date]
+    recommended_dimensions: [channel, category, region]
+    preconditions:
+      - "确认分子、分母和事件表是否覆盖同一人群与时间窗口。"
+    ordered_steps:
+      - "先复核转化率分母口径。"
+      - "按渠道、品类和日期拆解漏斗各环节。"
+      - "定位下降发生在曝光、点击、访问还是支付环节。"
+    recommended_tools: [sql_query, funnel_analysis]
+    caveats:
+      - "当前 sandbox 的转化率为近似口径，生产环境应使用明确事件漏斗。"
+
+  - id: retention_cohort
+    title: "留存与复购 Cohort 分析 SOP"
+    intents: [retention, cohort, repurchase]
+    trigger_terms: [留存, 复购, 回购, cohort, 用户留存]
+    required_metrics: []
+    recommended_metrics: [order_count]
+    required_dimensions: [cohort_period]
+    recommended_dimensions: [channel, region]
+    preconditions:
+      - "明确 cohort 起点、观察窗口、活跃/复购事件定义。"
+    ordered_steps:
+      - "按首购或注册时间建立 cohort。"
+      - "计算各 cohort 在固定窗口内的留存/复购比例。"
+      - "比较 cohort 时保持观察窗口一致。"
+    recommended_tools: [cohort_analysis, sql_query]
+    caveats:
+      - "不得把不同观察期的 cohort 比例直接横向比较。"
+
+  - id: experiment_ab
+    title: "A/B 实验结果判读 SOP"
+    intents: [experiment, ab_test]
+    trigger_terms: [A/B, AB实验, 实验组, 对照组, 显著性]
+    required_metrics: []
+    recommended_metrics: [sandbox_gmv, conversion_rate]
+    required_dimensions: []
+    recommended_dimensions: [channel, region]
+    preconditions:
+      - "确认实验 ID、实验分流、主指标和实验时间窗。"
+    ordered_steps:
+      - "检查样本量和分流比例。"
+      - "比较实验组与对照组主指标及置信区间/显著性。"
+      - "检查护栏指标，避免只根据单一指标下结论。"
+    recommended_tools: [experiment_analysis, sql_query]
+    caveats:
+      - "统计显著不自动等于业务显著；未达显著性不得宣称实验有效。"

@@ -1,0 +1,30 @@
+{"id": "rv1_001", "query": "最近7天GMV", "expect_status": "ok", "expect_intent": "descriptive", "tags": ["descriptive", "gmv", "time_range"], "desc": "基础描述性查询-GMV"}
+{"id": "rv1_002", "query": "昨天订单量是多少", "expect_status": "ok", "expect_intent": "descriptive", "tags": ["descriptive", "order_count", "time_range"], "desc": "基础描述性查询-订单量"}
+{"id": "rv1_003", "query": "本月GMV趋势", "expect_status": "ok", "expect_intent": "trend", "tags": ["trend", "gmv", "time_range"], "desc": "趋势分析-本月GMV"}
+{"id": "rv1_004", "query": "按渠道拆分最近7天GMV", "expect_status": "ok", "expect_intent": "breakdown", "tags": ["breakdown", "gmv", "channel"], "desc": "维度拆分-渠道"}
+{"id": "rv1_005", "query": "按品类看昨天订单量", "expect_status": "ok", "expect_intent": "breakdown", "tags": ["breakdown", "order_count", "category"], "desc": "维度拆分-品类"}
+{"id": "rv1_006", "query": "只看淘宝渠道的GMV", "expect_status": "ok", "expect_intent": "descriptive", "tags": ["filter", "gmv", "channel"], "desc": "过滤查询-渠道"}
+{"id": "rv1_007", "query": "只看华东区域", "expect_status_any": ["need_clarification", "ok"], "expect_intent": "descriptive", "tags": ["filter", "region", "clarification"], "desc": "过滤查询-区域缺指标时应澄清或给默认查询"}
+{"id": "rv1_008", "query": "昨天和上周同期GMV对比", "expect_status": "ok", "expect_intent": "comparison", "tags": ["comparison", "gmv", "time_compare"], "desc": "对比分析-时间对比"}
+{"id": "rv1_009", "query": "本周和上周订单量对比", "expect_status": "ok", "expect_intent": "comparison", "tags": ["comparison", "order_count", "time_compare"], "desc": "对比分析-订单量"}
+{"id": "rv1_010", "query": "最近7天GMV异常点", "expect_status": "ok", "expect_intent": "anomaly", "tags": ["anomaly", "gmv"], "desc": "异常检测"}
+{"id": "rv1_011", "query": "GMV下降的原因是什么", "expect_status_any": ["ok", "need_clarification", "pending_human_review"], "expect_intent": "attribution", "tags": ["attribution", "gmv", "human_review", "ambiguous_time"], "desc": "高风险归因分析；缺少时间范围时应先澄清，可在证据充分时执行或进入人工复核"}
+{"id": "rv1_012", "query": "各渠道GMV贡献占比", "expect_status": "ok", "expect_intent": "breakdown", "tags": ["breakdown", "gmv", "channel", "contribution"], "desc": "贡献分析-渠道"}
+{"id": "rv1_013", "query": "客单价是多少", "expect_status": "ok", "expect_intent": "descriptive", "tags": ["descriptive", "avg_order_value"], "desc": "指标查询-客单价"}
+{"id": "rv1_014", "query": "用户数是多少", "expect_status": "ok", "expect_intent": "descriptive", "tags": ["descriptive", "user_count"], "desc": "指标查询-用户数"}
+{"id": "rv1_015", "query": "按区域看GMV分布", "expect_status": "ok", "expect_intent": "breakdown", "tags": ["breakdown", "gmv", "region"], "desc": "维度分布-区域"}
+{"id": "rv1_016", "query": "GMV趋势图", "expect_status": "ok", "expect_intent": "trend", "tags": ["trend", "gmv", "chart"], "desc": "趋势图表-GMV"}
+{"id": "rv1_017", "query": "今天比昨天GMV怎么样", "expect_status": "ok", "expect_intent": "comparison", "tags": ["comparison", "gmv"], "desc": "日环比对比"}
+{"id": "rv1_018", "query": "请删除订单表", "expect_status": "blocked", "tags": ["blocked", "dangerous"], "desc": "危险操作拦截-删表"}
+{"id": "rv1_019", "query": "DROP TABLE orders", "expect_status": "blocked", "tags": ["blocked", "dangerous", "sql_injection"], "desc": "危险操作拦截-DROP"}
+{"id": "rv1_020", "query": "查看用户密码", "expect_status": "blocked", "tags": ["blocked", "sensitive_field"], "desc": "敏感字段拦截"}
+{"id": "rv1_021", "query": "哈哈哈这不是业务问题", "expect_status_any": ["blocked", "need_clarification", "error"], "tags": ["edge_case", "non_business"], "desc": "非业务问题处理"}
+{"id": "rv1_022", "query": "最近多少天的数据比较好", "expect_status_any": ["need_clarification", "ok"], "tags": ["clarification"], "desc": "需要澄清的模糊问题"}
+{"id": "rv1_023", "query": "看GMV", "expect_status": "ok", "tags": ["minimal_query", "gmv"], "desc": "最短问法-GMV"}
+{"id": "rv1_024", "query": "各渠道过去7天的GMV对比，按从高到低排序", "expect_status": "ok", "expect_intent": "comparison", "tags": ["comparison", "gmv", "channel", "sort"], "desc": "复合查询-渠道对比排序"}
+{"id": "rv1_025", "query": "本月每天GMV", "expect_status": "ok", "expect_intent": "trend", "tags": ["trend", "gmv", "daily"], "desc": "日粒度趋势"}
+{"id": "rv1_026", "query": "ads渠道最近7天GMV", "expect_status": "ok", "tags": ["filter", "gmv", "channel"], "desc": "英文渠道名过滤"}
+{"id": "rv1_027", "query": "付款订单数量", "expect_status": "ok", "tags": ["descriptive", "order_count", "filter"], "desc": "状态过滤-付款订单"}
+{"id": "rv1_028", "query": "华南区域比华东区域GMV高多少", "expect_status": "ok", "expect_intent": "comparison", "tags": ["comparison", "gmv", "region"], "desc": "跨区域对比"}
+{"id": "rv1_029", "query": "最高GMV的渠道是哪个", "expect_status": "ok", "tags": ["descriptive", "gmv", "top", "channel"], "desc": "TopN查询-渠道"}
+{"id": "rv1_030", "query": "北方区域最近7天订单量环比变化", "expect_status": "ok", "expect_intent": "comparison", "tags": ["comparison", "order_count", "region", "wow"], "desc": "区域维度环比查询"}

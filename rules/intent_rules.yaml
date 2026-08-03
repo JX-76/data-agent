@@ -1,0 +1,37 @@
+version: "1.0"
+
+intents:
+  anomaly:
+    keywords: ["为什么", "原因", "异常", "突然", "波动", "暴跌", "暴涨", "骤降", "骤升", "下滑原因", "下降原因"]
+  attribution:
+    keywords: ["贡献", "归因", "占比", "帕累托", "主要", "哪个", "导致", "拉低", "拉动", "驱动"]
+  comparison:
+    keywords: ["对比", "比较", "同比", "环比", "vs", "下降", "增长", "减少", "提升", "变化"]
+  breakdown:
+    keywords: ["各", "每个", "按", "分", "拆分", "分布"]
+  recommendation:
+    keywords: ["怎么提升", "如何提升", "怎么提高", "如何提高", "优化", "建议", "怎么办"]
+  unsupported:
+    keywords: ["预测", "未来", "留存", "漏斗", "cohort", "forecast", "funnel"]
+
+time_ranges:
+  last30d: ["最近30天", "近30天", "过去30天", "近一个月", "最近一个月"]
+  last14d: ["最近14天", "近两周", "过去两周"]
+  last7d: ["最近7天", "近7天", "过去7天", "近一周", "最近一周"]
+  this_week: ["本周", "这周"]
+  this_month: ["本月", "这个月"]
+  last_week: ["上周"]
+  yesterday: ["昨天", "昨日"]
+
+low_information_patterns:
+  - "帮我分析"
+  - "分析一下"
+  - "看看"
+  - "最近怎么样"
+  - "最近的"
+  - "经营情况"
+  - "业务情况"
+
+recommendation_examples:
+  - "怎么提升GMV"
+  - "如何提高转化率"

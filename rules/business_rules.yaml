@@ -1,0 +1,208 @@
+# Business Rules for Data Agent
+# Version: 1.0
+#
+# How to add new rules:
+# 1. Add metric/dimension aliases under departments.default
+# 2. Add intent rules with regex patterns
+# 3. Restart agent (YAML is loaded at startup)
+#
+# Pattern syntax:
+#   {metric}      - Matches any metric alias (resolved to canonical name)
+#   {dimension}   - Matches any dimension alias (resolved to canonical name)
+#   .*, +, ?     - Standard regex
+#   (a|b)         - Group alternatives
+
+version: "1.0"
+
+departments:
+  default:
+    # Metric aliases: canonical -> [synonyms]
+    metric_aliases:
+      gmv: ["销售额", "收入", "流水", "GMV", "营收", "gmv"]
+      order_count: ["订单数", "单量", "订单", "下单量", "order_count"]
+      aov: ["客单价", "均价", "AOV", "平均客单", "aov"]
+      avg_price: ["均价", "平均价格", "平均售价", "avg_price"]
+
+    # Dimension aliases: canonical -> [synonyms]
+    dimension_aliases:
+      channel: ["渠道", "来源", "平台", "channel"]
+      region: ["大区", "地区", "区域", "城市", "region"]
+      category: ["品类", "分类", "类目", "类型", "category"]
+
+    # Intent rules: ordered by priority (higher = match first)
+    intent_rules:
+      - name: "composition"
+        priority: 88
+        description: "Composition / percentage analysis"
+        patterns:
+          - ".*(占比|构成|分布|比例).*{metric}"
+          - "{metric}.*(占比|构成|分布|比例)"
+          - "(各|按).*{dimension}.*{metric}.*(占比|比例)"
+        params:
+          intent: "composition"
+          metric: "{matched_metric}"
+          dimensions: ["{matched_dimension}"]
+          calc_type: "percentage"
+
+      - name: "root_cause"
+        priority: 85
+        description: "Root cause analysis"
+        patterns:
+          - ".*(为什么|怎么|为何).*(下降|下跌|增长|变化|异常).*{metric}"
+          - ".*(原因|因素|驱动).*{metric}"
+          - ".*{metric}.*(为什么|怎么|为何).*(下降|下跌|增长|变化)"
+        params:
+          intent: "root_cause"
+          metric: "{matched_metric}"
+          analysis_type: "drill_down"
+
+      - name: "anomaly"
+        priority: 86
+        description: "Anomaly detection"
+        patterns:
+          - ".*(异常|波动|下降|下跌|增长|暴涨).*{metric}"
+          - ".*(为什么|怎么|为何).*{metric}.*(下降|下跌|增长|变化)"
+          - ".*{metric}.*(异常|波动|下降|下跌|增长|暴涨)"
+        params:
+          intent: "anomaly_detection"
+          metric: "{matched_metric}"
+          detection_method: "auto"
+
+      - name: "time_compare"
+        priority: 87
+        description: "Time comparison (YoY / MoM / trend)"
+        patterns:
+          - ".*(同比|同期|比去年|较上年).*{metric}"
+          - ".*(环比|比上月|较上月|比上周|较上周).*{metric}"
+          - ".*(趋势|走势|变化|波动).*{metric}"
+          - ".*{metric}.*(同比|环比|趋势|走势)"
+        params:
+          intent: "time_compare"
+          metric: "{matched_metric}"
+          compare_type: "auto"
+
+      - name: "anomaly"
+        priority: 86
+        description: "Anomaly detection"
+        patterns:
+          - ".*(异常|波动|下降|下跌|增长|暴涨).*{metric}"
+          - ".*(为什么|怎么|为何).*{metric}.*(下降|下跌|增长|变化)"
+          - ".*{metric}.*(异常|波动|下降|下跌|增长|暴涨)"
+        params:
+          intent: "anomaly_detection"
+          metric: "{matched_metric}"
+          detection_method: "auto"
+
+      - name: "top_n"
+        priority: 84
+        description: "Top N / ranking analysis"
+        patterns:
+          - '^(top|前|排名).*(\d*).*{metric}'
+          - ".*{metric}.*(排名|排行|前.*名|top)"
+          - ".*(最多|最少|最大|最小).*{metric}"
+        params:
+          intent: "top_n"
+          metric: "{matched_metric}"
+          limit: "{matched_number}"
+          order: "DESC"
+
+      - name: "cumulative"
+        priority: 83
+        description: "Cumulative / running total"
+        patterns:
+          - ".*(累计|累积|YTD|MTD|QTD|总计).*{metric}"
+          - ".*{metric}.*(累计|累积|YTD|MTD|QTD|总计)"
+        params:
+          intent: "cumulative"
+          metric: "{matched_metric}"
+          calc_type: "running_total"
+
+      - name: "retention"
+        priority: 82
+        description: "User retention analysis"
+        patterns:
+          - '.*(留存|留存率|留存用户).*(\d*).*(日|周|月)'
+          - ".*(复购|复购率|回购).*{metric}"
+        params:
+          intent: "retention"
+          metric: "{matched_metric}"
+          period_type: "{matched_period}"
+          periods: "{matched_number}"
+
+      - name: "metric_query"
+        priority: 80
+        description: "Query a single metric value"
+        patterns:
+          - "{metric}.*(多少|多少|是多少|怎么样|如何)"
+          - "(查|看|查询).*{metric}"
+          - "(昨天|今天|最近|本月|上周).*{metric}"
+        params:
+          intent: "metric_query"
+          metric: "{matched_metric}"
+
+      - name: "breakdown"
+        priority: 95
+        description: "Breakdown by dimension"
+        patterns:
+          - "(各|按|分|不同).*{dimension}.*{metric}"
+          - "{metric}.*(按|分|各|不同).*{dimension}"
+          - "{dimension}.*{metric}.*(分布|占比|情况)"
+        params:
+          intent: "breakdown"
+          metric: "{matched_metric}"
+          dimensions: ["{matched_dimension}"]
+
+      - name: "merge"
+        priority: 85
+        description: "Compare multiple metrics"
+        patterns:
+          - "{metric}.*和.*{metric}.*(一起|对比|同时|比较)"
+          - "(同时|一起).*{metric}.*和.*{metric}"
+          - "{metric}.*与.*{metric}.*(对比|比较)"
+        params:
+          intent: "merge"
+          metrics: ["{matched_metric_1}", "{matched_metric_2}"]
+          merge_on: "channel"  # Default merge dimension
+
+      - name: "compare_periods"
+        priority: 80
+        description: "Compare time periods"
+        patterns:
+          - "对比.*(上周|上周|本月|上月|昨天|前天)"
+          - "(环比|同比|对比).*(变化|趋势|情况)"
+          - "(上周|上月|昨天).*(和|与|对比).*(上周|上月|昨天)"
+          - ".*(这个月|上个月|本周|上周|今年|去年).*(和|与|对比).*(这个月|上个月|本周|上周|今年|去年)"
+        params:
+          intent: "compare_periods"
+          metric: "{matched_metric}"
+
+      - name: "filter_value"
+        priority: 70
+        description: "Filter by specific dimension value"
+        patterns:
+          - "(只|仅).*({dimension}).*(是|为|等于)"
+          - "({dimension}).*(是|为|等于).*(的|吗|？)"
+        params:
+          intent: "filter_value"
+          filter_dim: "{matched_dimension}"
+          filter_val: "{matched_value}"
+
+      - name: "sort_rank"
+        priority: 60
+        description: "Sort or rank results"
+        patterns:
+          - "^(排名|top|前|最多|最少|最大|最小)"
+          - "(排序|按.*排序|从高到低|从低到高)$"
+        params:
+          intent: "sort"
+          metric: "{matched_metric}"
+          order: "DESC"
+
+      - name: "clarification"
+        priority: 10
+        description: "Vague query needing clarification"
+        patterns:
+          - "^(查|看|分析).*(数据|情况|指标)$"
+        params:
+          intent: "clarification_needed"
+          question: "请选择分析口径"

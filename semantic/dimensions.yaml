@@ -1,0 +1,24 @@
+version: "1.0"
+dimensions:
+  - id: date
+    name: 日期
+    field: "DATE(fct_orders.paid_at)"
+    table: fct_orders
+    synonyms: ["日期", "时间", "每天", "按天"]
+  - id: channel
+    name: 渠道
+    field: "fct_orders.channel"
+    table: fct_orders
+    synonyms: ["渠道", "来源"]
+  - id: region
+    name: 区域
+    field: "dim_store.region"
+    table: dim_store
+    join: orders_to_store
+    synonyms: ["区域", "地区", "大区"]
+  - id: category
+    name: 品类
+    field: "dim_product.category"
+    table: dim_product
+    join: orders_to_product
+    synonyms: ["品类", "类目", "分类", "商品品类"]

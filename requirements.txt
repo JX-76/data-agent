@@ -1,0 +1,38 @@
+# Data Agent - Production Dependencies
+# Core framework
+# FastAPI 0.104–0.109 is not compatible with Starlette 1.x.  Keep this
+# explicit because an unconstrained transitive upgrade previously prevented
+# the production server from importing.
+fastapi>=0.104.0,<0.110.0
+starlette>=0.27.0,<0.36.0
+uvicorn[standard]>=0.24.0
+structlog>=23.2.0
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+
+# Database drivers
+psycopg2-binary>=2.9.9
+mysql-connector-python>=8.2.0
+duckdb>=0.9.0
+
+# LLM & Evaluation
+deepeval>=0.20.0
+langfuse>=2.0.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+
+# Data processing
+numpy>=1.24.0
+pandas>=2.0.0
+
+# HTTP client
+httpx>=0.25.0
+
+# Security
+cryptography>=41.0.0
+sqlglot>=25.0.0
+
+# Monitoring
+prometheus-client>=0.19.0

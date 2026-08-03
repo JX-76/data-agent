@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  data-agent:
+    build: .
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      - DATA_AGENT_PROFILE=${DATA_AGENT_PROFILE:-prod}
+      - DATA_AGENT_API_KEY=${DATA_AGENT_API_KEY:-}
+      - DATA_AGENT_AUTH=${DATA_AGENT_AUTH:-true}
+      # Database configuration
+      - DATA_AGENT_DB_TYPE=${DATA_AGENT_DB_TYPE:-postgresql}
+      - DATA_AGENT_DB_HOST=${DATA_AGENT_DB_HOST:-db}
+      - DATA_AGENT_DB_PORT=${DATA_AGENT_DB_PORT:-5432}
+      - DATA_AGENT_DB_NAME=${DATA_AGENT_DB_NAME:-data_agent}
+      - DATA_AGENT_DB_USER=${DATA_AGENT_DB_USER:-data_agent}
+      - DATA_AGENT_DB_PASSWORD=${DATA_AGENT_DB_PASSWORD:-}
+      - DATA_AGENT_DB_POOL_MIN=${DATA_AGENT_DB_POOL_MIN:-2}
+      - DATA_AGENT_DB_POOL_MAX=${DATA_AGENT_DB_POOL_MAX:-10}
+      # LLM
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - DEEPSEEK_BASE_URL=${DEEPSEEK_BASE_URL:-https://api.deepseek.com/v1}
+      # Observability
+      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY:-}
+      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY:-}
+      - LANGFUSE_HOST=${LANGFUSE_HOST:-https://cloud.langfuse.com}
+      # Cache & Rate Limit
+      - DATA_AGENT_CACHE_SIZE=${DATA_AGENT_CACHE_SIZE:-1000}
+      - DATA_AGENT_CACHE_TTL=${DATA_AGENT_CACHE_TTL:-300}
+      - DATA_AGENT_RATE_LIMIT=${DATA_AGENT_RATE_LIMIT:-100}
+      # Logging
+      - DATA_AGENT_LOG_LEVEL=${DATA_AGENT_LOG_LEVEL:-INFO}
+    volumes:
+      - ./sessions:/app/sessions
+      - ./flywheel_data:/app/flywheel_data
+    restart: unless-stopped
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DATA_AGENT_DB_NAME:-data_agent}
+      POSTGRES_USER: ${DATA_AGENT_DB_USER:-data_agent}
+      POSTGRES_PASSWORD: ${DATA_AGENT_DB_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATA_AGENT_DB_USER:-data_agent} -d ${DATA_AGENT_DB_NAME:-data_agent}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Agent BI Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --bg: #f8f7f3;
+  --surface: #fffefa;
+  --surface-soft: #fcfbf8;
+  --border: #e8e5de;
+  --text: #292622;
+  --muted: #736e67;
+  --accent: #58738b;
+  --green: #397358;
+  --red: #a74c43;
+  --yellow: #9a6c24;
+  --purple: #7a6d93;
+  --orange: #a97248;
+  --shadow: 0 8px 24px rgba(67, 57, 46, .04);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body, button, table { font-family: "Times New Roman", Times, serif; }
+body { background: var(--bg); color: var(--text); line-height: 1.6; }
+.container { max-width: 1400px; margin: 0 auto; padding: 28px; }
+header { display: flex; justify-content: space-between; align-items: center; padding: 8px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 25px; }
+header h1 { font-size: 27px; color: var(--text); letter-spacing: -.3px; }
+.refresh-btn { padding: 8px 15px; color: var(--text); background: var(--surface); border: 1px solid #d8d3ca; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 700; }
+.refresh-btn:hover { background: #f1efea; border-color: #a6b6c0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.kpis { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 18px; }
+.chart-grid { margin-bottom: 18px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 19px; box-shadow: var(--shadow); }
+.card h3 { margin-bottom: 13px; color: var(--muted); font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.metric { color: var(--text); font-size: 35px; font-weight: 700; }
+.metric-label { margin-top: 2px; color: var(--muted); font-size: 14px; }
+.chart-container { position: relative; height: 300px; }
+.table-wrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; font-size: 14px; }
+.table th { color: var(--muted); background: var(--surface-soft); font-weight: 700; }
+.table tr:hover { background: #f5f7f6; }
+.status-badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 13px; font-weight: 700; }
+.status-badge.ok { color: var(--green); background: #edf6ef; }
+.status-badge.warn { color: var(--yellow); background: #fff6e5; }
+.status-badge.err { color: var(--red); background: #fcefed; }
+.alert { padding: 12px 16px; margin-bottom: 16px; border-radius: 7px; }
+.alert.warn { color: var(--yellow); background: #fff8e9; border: 1px solid #eedcae; }
+.alert.err { color: var(--red); background: #fcefed; border: 1px solid #edc8c2; }
+@media (max-width: 640px) {
+  .container { padding: 18px 14px; }
+  header h1 { font-size: 22px; }
+  .card { padding: 15px; }
+  .table { min-width: 620px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Data Agent BI Dashboard</h1>
+    <button class="refresh-btn" onclick="refreshData()">刷新</button>
+  </header>
+
+  <div id="alerts"></div>
+
+  <div class="grid kpis">
+    <div class="card"><div class="metric" id="totalQueries">0</div><div class="metric-label">总查询数</div></div>
+    <div class="card"><div class="metric" id="avgLatency">0ms</div><div class="metric-label">平均延迟</div></div>
+    <div class="card"><div class="metric" id="cacheHitRate">0%</div><div class="metric-label">缓存命中率</div></div>
+    <div class="card"><div class="metric" id="errorRate">0%</div><div class="metric-label">错误率</div></div>
+    <div class="card"><div class="metric" id="activeSessions">0</div><div class="metric-label">活跃会话</div></div>
+  </div>
+
+  <div class="grid chart-grid">
+    <div class="card"><h3>查询趋势 (24小时)</h3><div class="chart-container"><canvas id="queryTrendChart"></canvas></div></div>
+    <div class="card"><h3>意图分布</h3><div class="chart-container"><canvas id="intentChart"></canvas></div></div>
+  </div>
+
+  <div class="grid chart-grid">
+    <div class="card"><h3>延迟分布</h3><div class="chart-container"><canvas id="latencyChart"></canvas></div></div>
+    <div class="card"><h3>错误类型</h3><div class="chart-container"><canvas id="errorChart"></canvas></div></div>
+  </div>
+
+  <div class="card" style="margin-bottom: 18px;">
+    <h3>最近查询</h3>
+    <div class="table-wrap">
+      <table class="table" id="recentQueries">
+        <thead><tr><th>时间</th><th>查询</th><th>意图</th><th>状态</th><th>延迟</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>系统健康</h3>
+    <div class="table-wrap">
+      <table class="table" id="healthStatus">
+        <thead><tr><th>组件</th><th>状态</th><th>指标</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+Chart.defaults.color = '#736e67';
+Chart.defaults.borderColor = '#e8e5de';
+
+let queryTrendChart, intentChart, latencyChart, errorChart;
+
+function initCharts() {
+  queryTrendChart = new Chart(document.getElementById('queryTrendChart').getContext('2d'), {
+    type: 'line',
+    data: { labels: [], datasets: [{ label: '查询数', data: [], borderColor: '#58738b', backgroundColor: 'rgba(88, 115, 139, 0.12)', fill: true, tension: 0.4 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#e8e5de' } }, x: { grid: { display: false } } } }
+  });
+
+  intentChart = new Chart(document.getElementById('intentChart').getContext('2d'), {
+    type: 'doughnut',
+    data: { labels: ['销售', '订单', '产品', '用户', '其他'], datasets: [{ data: [35, 25, 20, 15, 5], backgroundColor: ['#58738b', '#5b9177', '#c49a47', '#8a7aa5', '#ba8259'] }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+  });
+
+  latencyChart = new Chart(document.getElementById('latencyChart').getContext('2d'), {
+    type: 'bar',
+    data: { labels: ['<100ms', '100-500ms', '500ms-1s', '1-2s', '>2s'], datasets: [{ label: '查询数', data: [45, 30, 15, 8, 2], backgroundColor: '#58738b' }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#e8e5de' } }, x: { grid: { display: false } } } }
+  });
+
+  errorChart = new Chart(document.getElementById('errorChart').getContext('2d'), {
+    type: 'bar',
+    data: { labels: ['SQL错误', '超时', '验证失败', '限流', '其他'], datasets: [{ label: '错误数', data: [5, 3, 8, 2, 1], backgroundColor: '#b66359' }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#e8e5de' } }, x: { grid: { display: false } } } }
+  });
+}
+
+function updateMetrics(data) {
+  document.getElementById('totalQueries').textContent = data.total_queries || 0;
+  document.getElementById('avgLatency').textContent = (data.avg_latency || 0) + 'ms';
+  document.getElementById('cacheHitRate').textContent = (data.cache_hit_rate || 0) + '%';
+  document.getElementById('errorRate').textContent = (data.error_rate || 0) + '%';
+  document.getElementById('activeSessions').textContent = data.active_sessions || 0;
+}
+
+function updateRecentQueries(queries) {
+  const tbody = document.querySelector('#recentQueries tbody');
+  tbody.innerHTML = queries.map(q => `
+    <tr>
+      <td>${new Date(q.timestamp).toLocaleString()}</td>
+      <td>${q.query}</td>
+      <td>${q.intent}</td>
+      <td><span class="status-badge ${q.status === 'ok' ? 'ok' : 'err'}">${q.status}</span></td>
+      <td>${q.latency}ms</td>
+    </tr>
+  `).join('');
+}
+
+function updateHealthStatus(components) {
+  const tbody = document.querySelector('#healthStatus tbody');
+  tbody.innerHTML = components.map(c => `
+    <tr>
+      <td>${c.name}</td>
+      <td><span class="status-badge ${c.status === 'healthy' ? 'ok' : c.status === 'warning' ? 'warn' : 'err'}">${c.status}</span></td>
+      <td>${c.metric}</td>
+    </tr>
+  `).join('');
+}
+
+function showAlerts(alerts) {
+  const container = document.getElementById('alerts');
+  container.innerHTML = alerts.map(a => `<div class="alert ${a.severity}">${a.message}</div>`).join('');
+}
+
+async function refreshData() {
+  try {
+    const data = {
+      total_queries: 15234,
+      avg_latency: 245,
+      cache_hit_rate: 87.5,
+      error_rate: 0.3,
+      active_sessions: 42,
+      recent_queries: [
+        { timestamp: Date.now() - 30000, query: '昨天 GMV', intent: 'sales', status: 'ok', latency: 120 },
+        { timestamp: Date.now() - 60000, query: '各渠道订单', intent: 'orders', status: 'ok', latency: 180 },
+        { timestamp: Date.now() - 90000, query: '退款分析', intent: 'refund', status: 'ok', latency: 250 }
+      ],
+      components: [
+        { name: 'API Server', status: 'healthy', metric: 'CPU 45%' },
+        { name: 'Database', status: 'healthy', metric: '连接数 12/50' },
+        { name: 'Cache', status: 'healthy', metric: '命中率 87%' },
+        { name: 'LLM Service', status: 'warning', metric: '延迟 2.5s' }
+      ],
+      alerts: [{ severity: 'warn', message: 'LLM 服务响应时间超过 2s' }]
+    };
+
+    updateMetrics(data);
+    updateRecentQueries(data.recent_queries);
+    updateHealthStatus(data.components);
+    showAlerts(data.alerts);
+
+    if (queryTrendChart) {
+      queryTrendChart.data.labels = Array.from({ length: 24 }, (_, i) => `${i}:00`);
+      queryTrendChart.data.datasets[0].data = Array.from({ length: 24 }, () => Math.floor(Math.random() * 100));
+      queryTrendChart.update();
+    }
+  } catch (e) {
+    console.error('Failed to refresh data:', e);
+  }
+}
+
+initCharts();
+refreshData();
+setInterval(refreshData, 30000);
+</script>
+</body>
+</html>

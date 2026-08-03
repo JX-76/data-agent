@@ -1,0 +1,4 @@
+{"case_id":"p3_protected_retention","phase":"P3","contract":"context_harness_case_v1","scenario":"compress a case with policy constraints, verified fact/evidence, pending task and audit markers","expected":"protected sections retained"}
+{"case_id":"p3_tool_raw_reference","phase":"P3","contract":"context_harness_case_v1","scenario":"large tool output is represented by safe summary and payload_ref","expected":"no raw payload injected"}
+{"case_id":"p3_memory_admission","phase":"P3","contract":"context_harness_case_v1","scenario":"model inference cannot enter long-term memory without review","expected":"eligible_for_long_term=false"}
+{"case_id":"p3_prefix_observability","phase":"P3","contract":"context_harness_case_v1","scenario":"provider cache hit unavailable","expected":"provider_reported_cache_hit=null; no hit-rate claim"}

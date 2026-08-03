@@ -1,0 +1,155 @@
+version: "1.0"
+# 扩展维度定义 - 用户分析、产品分析、营销分析、供应链分析
+
+dimensions:
+  # ── 基础维度 (原有) ──
+  - id: date
+    name: 日期
+    field: "DATE(fct_orders.paid_at)"
+    table: fct_orders
+    synonyms: ["日期", "时间", "每天", "按天", "日", "天"]
+
+  - id: channel
+    name: 渠道
+    field: "fct_orders.channel"
+    table: fct_orders
+    synonyms: ["渠道", "来源", "销售渠", "通路"]
+
+  - id: region
+    name: 区域
+    field: "dim_store.region"
+    table: dim_store
+    join: orders_to_store
+    synonyms: ["区域", "地区", "大区", "省份", "城市"]
+
+  - id: category
+    name: 品类
+    field: "dim_product.category"
+    table: dim_product
+    join: orders_to_product
+    synonyms: ["品类", "类目", "分类", "商品品类", "产品类别"]
+
+  # ── 用户分析维度 ──
+  - id: user_type
+    name: 用户类型
+    field: "CASE WHEN fct_orders.is_first_order = 1 THEN '新客' ELSE '老客' END"
+    table: fct_orders
+    synonyms: ["用户类型", "新老客", "客户类型", "新客老客"]
+
+  - id: user_age_group
+    name: 用户年龄段
+    field: "CASE WHEN dim_user.age < 18 THEN '18岁以下' WHEN dim_user.age < 25 THEN '18-25岁' WHEN dim_user.age < 35 THEN '25-35岁' WHEN dim_user.age < 45 THEN '35-45岁' ELSE '45岁以上' END"
+    table: dim_user
+    join: orders_to_user
+    synonyms: ["年龄段", "年龄组", "用户年龄"]
+
+  - id: user_gender
+    name: 用户性别
+    field: "dim_user.gender"
+    table: dim_user
+    join: orders_to_user
+    synonyms: ["性别", "用户性别"]
+
+  - id: user_city
+    name: 用户城市
+    field: "dim_user.city"
+    table: dim_user
+    join: orders_to_user
+    synonyms: ["城市", "用户城市", "所在城市"]
+
+  - id: registration_date
+    name: 注册日期
+    field: "DATE(dim_user.registration_date)"
+    table: dim_user
+    join: orders_to_user
+    synonyms: ["注册日期", "注册时间", "加入时间"]
+
+  # ── 产品分析维度 ──
+  - id: product_name
+    name: 商品名称
+    field: "dim_product.product_name"
+    table: dim_product
+    join: orders_to_product
+    synonyms: ["商品", "产品", "SKU", "商品名称", "产品名称"]
+
+  - id: brand
+    name: 品牌
+    field: "dim_product.brand"
+    table: dim_product
+    join: orders_to_product
+    synonyms: ["品牌", "商标", "牌子"]
+
+  - id: price_range
+    name: 价格区间
+    field: "CASE WHEN dim_product.unit_price < 50 THEN '0-50元' WHEN dim_product.unit_price < 100 THEN '50-100元' WHEN dim_product.unit_price < 200 THEN '100-200元' WHEN dim_product.unit_price < 500 THEN '200-500元' ELSE '500元以上' END"
+    table: dim_product
+    join: orders_to_product
+    synonyms: ["价格区间", "价格段", "价位"]
+
+  - id: product_status
+    name: 商品状态
+    field: "dim_product.status"
+    table: dim_product
+    join: orders_to_product
+    synonyms: ["商品状态", "产品状态", "上架状态"]
+
+  # ── 营销分析维度 ──
+  - id: campaign
+    name: 活动
+    field: "fct_marketing.campaign_name"
+    table: fct_marketing
+    join: orders_to_marketing
+    synonyms: ["活动", "campaign", "营销活动", "促销活动"]
+
+  - id: ad_channel
+    name: 广告渠道
+    field: "fct_marketing.channel"
+    table: fct_marketing
+    join: orders_to_marketing
+    synonyms: ["广告渠道", "投放渠道", "推广渠道"]
+
+  - id: ad_type
+    name: 广告类型
+    field: "fct_marketing.ad_type"
+    table: fct_marketing
+    join: orders_to_marketing
+    synonyms: ["广告类型", "推广类型", "投放类型"]
+
+  - id: creative
+    name: 创意
+    field: "fct_marketing.creative_name"
+    table: fct_marketing
+    join: orders_to_marketing
+    synonyms: ["创意", "素材", "广告创意"]
+
+  # ── 供应链分析维度 ──
+  - id: warehouse
+    name: 仓库
+    field: "dim_warehouse.warehouse_name"
+    table: dim_warehouse
+    join: orders_to_warehouse
+    synonyms: ["仓库", "配送中心", "仓储"]
+
+  - id: logistics_provider
+    name: 物流商
+    field: "fct_orders.logistics_provider"
+    table: fct_orders
+    synonyms: ["物流商", "快递公司", "物流"]
+
+  - id: delivery_status
+    name: 配送状态
+    field: "CASE WHEN fct_orders.delivered_at IS NOT NULL THEN '已签收' WHEN fct_orders.shipped_at IS NOT NULL THEN '已发货' ELSE '待发货' END"
+    table: fct_orders
+    synonyms: ["配送状态", "物流状态", "发货状态"]
+
+  - id: payment_method
+    name: 支付方式
+    field: "fct_orders.payment_method"
+    table: fct_orders
+    synonyms: ["支付方式", "付款方式", "支付渠道"]
+
+  - id: order_status
+    name: 订单状态
+    field: "fct_orders.order_status"
+    table: fct_orders
+    synonyms: ["订单状态", "状态", "订单情况"]

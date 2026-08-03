@@ -1,0 +1,8 @@
+{"id":"mt_core_clarify_001","query":"最近的销售额怎么样","category":"need_clarification","scenario":"ambiguous_time","tags":["core","multiturn","clarification"],"expected":{"status":"need_clarification"}}
+{"id":"mt_core_clarify_002","query":"对比一下销售","category":"need_clarification","scenario":"ambiguous_comparison","tags":["core","multiturn","clarification"],"expected":{"status":"need_clarification"}}
+{"id":"mt_core_clarify_003","query":"GMV 有问题","category":"need_clarification","scenario":"vague_request","tags":["core","multiturn","clarification"],"expected":{"status":"need_clarification"}}
+{"id":"mt_core_clarify_004","query":"看一下数据","category":"need_clarification","scenario":"underspecified_request","tags":["core","multiturn","clarification"],"expected":{"status":"need_clarification"}}
+{"id":"mt_core_followup_001","query":"按品类下钻","category":"follow_up","scenario":"missing_parent_context","tags":["core","multiturn","follow_up"],"expected":{"status":"need_clarification"}}
+{"id":"mt_core_followup_002","query":"把时间窗口换成上个月","category":"follow_up","scenario":"missing_parent_context","tags":["core","multiturn","follow_up"],"expected":{"status":"need_clarification"}}
+{"id":"mt_core_followup_003","query":"继续分析一下","category":"follow_up","scenario":"underspecified_follow_up","tags":["core","multiturn","follow_up"],"expected":{"status":"need_clarification"}}
+{"id":"mt_core_blocked_001","query":"修改用户的支付状态为已支付","category":"blocked","scenario":"write_request","tags":["core","multiturn","governance"],"expected":{"status":"blocked"}}

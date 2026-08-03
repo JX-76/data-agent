@@ -1,0 +1,215 @@
+version: "1.0"
+# 扩展表定义 - 用户分析、产品分析、营销分析、供应链分析
+
+tables:
+  # ── 基础表 (原有) ──
+  - name: fct_orders
+    allowed: true
+    primary_key: order_id
+    time_fields: [paid_at]
+    columns:
+      - order_id
+      - user_id
+      - store_id
+      - product_id
+      - channel
+      - order_status
+      - sell_through
+      - quantity
+      - cost
+      - paid_at
+      - shipped_at
+      - shipped_on_time
+      - delivered_at
+      - is_first_order
+      - payment_method
+      - logistics_provider
+    notes:
+      - "订单事实表，核心交易数据。"
+      - "包含订单状态、金额、时间等关键信息。"
+
+  - name: dim_store
+    allowed: true
+    primary_key: store_id
+    columns:
+      - store_id
+      - region
+      - city
+      - store_name
+      - store_type
+    notes:
+      - "门店维表，包含门店基本信息。"
+
+  - name: dim_product
+    allowed: true
+    primary_key: product_id
+    columns:
+      - product_id
+      - product_name
+      - category
+      - brand
+      - unit_price
+      - status
+      - inventory
+    notes:
+      - "产品维表，包含产品基本信息。"
+
+  # ── 用户分析表 ──
+  - name: dim_user
+    allowed: true
+    primary_key: user_id
+    columns:
+      - user_id
+      - age
+      - gender
+      - city
+      - registration_date
+      - user_level
+      - user_source
+    notes:
+      - "用户维表，包含用户基本信息。"
+      - "支持用户画像、分群分析。"
+
+  # ── 营销分析表 ──
+  - name: fct_marketing
+    allowed: true
+    primary_key: marketing_id
+    time_fields: [date]
+    columns:
+      - marketing_id
+      - order_id
+      - campaign_name
+      - channel
+      - ad_type
+      - creative_name
+      - spend
+      - impressions
+      - clicks
+      - date
+    notes:
+      - "营销事实表，记录营销活动数据。"
+      - "支持ROI、CPA、转化率分析。"
+
+  - name: fct_traffic
+    allowed: true
+    primary_key: traffic_id
+    time_fields: [date]
+    columns:
+      - traffic_id
+      - user_id
+      - channel
+      - visits
+      - page_views
+      - bounce_rate
+      - date
+    notes:
+      - "流量事实表，记录网站/APP访问数据。"
+      - "支持转化率、跳出率分析。"
+
+  # ── 供应链分析表 ──
+  - name: dim_warehouse
+    allowed: true
+    primary_key: warehouse_id
+    columns:
+      - warehouse_id
+      - warehouse_name
+      - region
+      - city
+      - warehouse_type
+      - capacity
+    notes:
+      - "仓库维表，包含仓库基本信息。"
+      - "支持库存分布、仓储效率分析。"
+
+  - name: fct_inventory
+    allowed: true
+    primary_key: inventory_id
+    time_fields: [date]
+    columns:
+      - inventory_id
+      - product_id
+      - warehouse_id
+      - quantity
+      - cost
+      - date
+    notes:
+      - "库存事实表，记录每日库存数据。"
+      - "支持库存周转、缺货分析。"
+
+  - name: fct_logistics
+    allowed: true
+    primary_key: logistics_id
+    time_fields: [created_at]
+    columns:
+      - logistics_id
+      - order_id
+      - warehouse_id
+      - logistics_provider
+      - status
+      - created_at
+      - shipped_at
+      - delivered_at
+    notes:
+      - "物流事实表，记录物流跟踪数据。"
+      - "支持配送时效、物流商效率分析。"
+
+joins:
+  # ── 基础关联 (原有) ──
+  - id: orders_to_store
+    left_table: fct_orders
+    right_table: dim_store
+    condition: "fct_orders.store_id = dim_store.store_id"
+    type: left
+    notes: "订单关联门店"
+
+  - id: orders_to_product
+    left_table: fct_orders
+    right_table: dim_product
+    condition: "fct_orders.product_id = dim_product.product_id"
+    type: left
+    notes: "订单关联产品"
+
+  # ── 用户分析关联 ──
+  - id: orders_to_user
+    left_table: fct_orders
+    right_table: dim_user
+    condition: "fct_orders.user_id = dim_user.user_id"
+    type: left
+    notes: "订单关联用户"
+
+  # ── 营销分析关联 ──
+  - id: orders_to_marketing
+    left_table: fct_orders
+    right_table: fct_marketing
+    condition: "fct_orders.order_id = fct_marketing.order_id"
+    type: left
+    notes: "订单关联营销"
+
+  - id: traffic_to_orders
+    left_table: fct_traffic
+    right_table: fct_orders
+    condition: "fct_traffic.user_id = fct_orders.user_id AND DATE(fct_traffic.date) = DATE(fct_orders.paid_at)"
+    type: left
+    notes: "流量关联订单"
+
+  # ── 供应链分析关联 ──
+  - id: orders_to_warehouse
+    left_table: fct_orders
+    right_table: dim_warehouse
+    condition: "fct_orders.store_id = dim_warehouse.warehouse_id"
+    type: left
+    notes: "订单关联仓库"
+
+  - id: product_to_inventory
+    left_table: dim_product
+    right_table: fct_inventory
+    condition: "dim_product.product_id = fct_inventory.product_id"
+    type: left
+    notes: "产品关联库存"
+
+  - id: orders_to_logistics
+    left_table: fct_orders
+    right_table: fct_logistics
+    condition: "fct_orders.order_id = fct_logistics.order_id"
+    type: left
+    notes: "订单关联物流"

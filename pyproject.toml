@@ -1,0 +1,11 @@
+[tool.pytest.ini_options]
+markers = [
+    "unit: fast unit tests without external dependencies",
+    "contract: schema/contract compatibility tests",
+    "integration: multi-module integration tests",
+    "slow: tests that require external API calls (DeepSeek, etc.)",
+    "llm: tests that require live LLM access",
+    "benchmark: performance or benchmark-style tests",
+    "perf: latency/performance checks",
+    "security: security-related checks",
+]

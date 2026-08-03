@@ -1,0 +1,3 @@
+{"case_id":"fqg_reliability_timeout_001","suite":"full_quality_gate_reliability","input":{"gate":"timeout_gate","timeout_seconds":0.2},"expected":{"timed_out":true,"failure_reason":"timeout","requires_process_tree_cleanup":true,"requires_last_output":true},"risk":"quality_gate_hang_observability"}
+{"case_id":"fqg_reliability_nonzero_001","suite":"full_quality_gate_reliability","input":{"gate":"fail_gate"},"expected":{"passed":false,"failure_reason":"nonzero_exit"},"risk":"quality_gate_failure_classification"}
+{"case_id":"fqg_reliability_success_001","suite":"full_quality_gate_reliability","input":{"gate":"ok_gate"},"expected":{"passed":true,"timed_out":false,"requires_last_output":true},"risk":"quality_gate_contract_compatibility"}

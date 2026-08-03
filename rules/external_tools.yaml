@@ -1,0 +1,65 @@
+tools:
+  - tool_id: semantic.catalog_read
+    category: semantic
+    description: Read semantic catalog snapshot
+    input_schema:
+      required: []
+      properties: {}
+    output_schema:
+      required: [semantic_version, metrics, dimensions, models]
+    timeout_ms: 1000
+    risk_level: low
+    side_effect: read_only
+    requires_human_review: false
+    allowed_intents: [metric_query, breakdown, comparison, anomaly, attribution, unsupported]
+    idempotent: true
+
+  - tool_id: warehouse.schema_introspect
+    category: data_source
+    description: Read physical schema from readonly warehouse adapter
+    input_schema:
+      required: []
+      properties: {}
+    output_schema:
+      required: [schema]
+    timeout_ms: 3000
+    risk_level: low
+    side_effect: read_only
+    requires_human_review: false
+    allowed_intents: [metric_query, breakdown, comparison, anomaly, attribution]
+    idempotent: true
+
+  - tool_id: warehouse.query_sql
+    category: data_source
+    description: Execute readonly SELECT/WITH SQL against warehouse adapter
+    input_schema:
+      required: [sql]
+      properties:
+        sql: {type: string, min_len: 1}
+        limit: {type: integer, min: 0, max: 1000}
+        offset: {type: integer, min: 0, max: 100000}
+    output_schema:
+      required: [rows, row_count, sql]
+    timeout_ms: 8000
+    risk_level: medium
+    side_effect: read_only
+    requires_human_review: false
+    allowed_intents: [metric_query, breakdown, comparison, anomaly, attribution]
+    forbidden_operations: [insert, update, delete, drop, alter, truncate, export]
+    idempotent: true
+
+  - tool_id: harness.run_suite
+    category: ops
+    description: Run a harness suite by name or JSONL path
+    input_schema:
+      required: [suite]
+      properties:
+        suite: {type: string, min_len: 1}
+    output_schema:
+      required: [suite, metrics]
+    timeout_ms: 30000
+    risk_level: low
+    side_effect: read_only
+    requires_human_review: false
+    allowed_intents: [ops, evaluation]
+    idempotent: true

@@ -1,0 +1,5 @@
+{"case_id":"p5_status_snapshot","phase":"P5","contract":"async_event_harness_case_v1","scenario":"GET task status returns durable TaskRecord snapshot independent from connection","expected":"task_status_api_v1"}
+{"case_id":"p5_last_event_id","phase":"P5","contract":"async_event_harness_case_v1","scenario":"event stream resumes after Last-Event-ID and emits heartbeat","expected":"missed events plus heartbeat"}
+{"case_id":"p5_disconnect_no_cancel","phase":"P5","contract":"async_event_harness_case_v1","scenario":"client disconnects from observer stream","expected":"task remains queued/running in durable state"}
+{"case_id":"p5_authorized_cancel","phase":"P5","contract":"async_event_harness_case_v1","scenario":"cancel is separate authorized audited API","expected":"unauthorized denied; authorized cancelled"}
+{"case_id":"p5_autoscaling_contract","phase":"P5","contract":"async_event_harness_case_v1","scenario":"queue depth / worker concurrency / backpressure metrics exist without claiming live K8s","expected":"contract_only_not_live_cluster_metric"}

@@ -1,0 +1,250 @@
+version: "1.0"
+# 扩展指标定义 - 用户分析、产品分析、营销分析、供应链分析
+
+metrics:
+  # ── 销售指标 (原有) ──
+  - id: gmv
+    name: GMV
+    description: "已支付订单成交总额，未扣除退款。"
+    synonyms: ["GMV", "销售额", "成交额", "业绩", "revenue", "收入", "营业额", "销售金额"]
+    expression: "SUM(fct_orders.sell_through)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, region, category, user_type]
+    unit: CNY
+    note: "GMV 未扣除退款。"
+
+  - id: order_count
+    name: 订单数
+    description: "有效订单数量。"
+    synonyms: ["订单数", "交易笔数", "单量", "orders", "订单量"]
+    expression: "COUNT(DISTINCT fct_orders.order_id)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, region, category, user_type]
+    unit: count
+
+  - id: aov
+    name: 客单价
+    description: "GMV / 订单数。"
+    synonyms: ["客单价", "AOV", "平均订单金额", "笔单价"]
+    expression: "SUM(fct_orders.sell_through) / NULLIF(COUNT(DISTINCT fct_orders.order_id), 0)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, region, category]
+    unit: CNY
+
+  - id: avg_price
+    name: 商品均价
+    description: "商品平均单价。"
+    synonyms: ["均价", "平均价格", "商品均价", "average price", "单价"]
+    expression: "AVG(dim_product.unit_price)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, category]
+    unit: CNY
+
+  # ── 用户分析指标 ──
+  - id: user_count
+    name: 用户数
+    description: "去重活跃用户数。"
+    synonyms: ["用户数", "用户量", "UV", "活跃用户数", "访客数"]
+    expression: "COUNT(DISTINCT fct_orders.user_id)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, region, user_type]
+    unit: count
+
+  - id: new_users
+    name: 新增用户
+    description: "首次下单用户数。"
+    synonyms: ["新增用户", "新客", "新用户", "首次购买用户"]
+    expression: "COUNT(DISTINCT CASE WHEN fct_orders.is_first_order = 1 THEN fct_orders.user_id END)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, region]
+    unit: count
+
+  - id: retention_rate
+    name: 留存率
+    description: "次日/7日/30日留存率。"
+    synonyms: ["留存率", "留存", "用户留存", "次日留存", "7日留存"]
+    expression: "COUNT(DISTINCT retained_users) * 1.0 / COUNT(DISTINCT all_users)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, region]
+    unit: "%"
+    note: "需要窗口函数计算，实际SQL可能更复杂。"
+
+  - id: user_ltv
+    name: 用户LTV
+    description: "用户生命周期价值。"
+    synonyms: ["LTV", "用户价值", "生命周期价值", "用户终身价值"]
+    expression: "SUM(fct_orders.sell_through) / COUNT(DISTINCT fct_orders.user_id)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, region, user_type]
+    unit: CNY
+
+  - id: repurchase_rate
+    name: 复购率
+    description: "重复购买用户占比。"
+    synonyms: ["复购率", "重复购买率", "回头客比例"]
+    expression: "COUNT(DISTINCT CASE WHEN order_count > 1 THEN user_id END) * 1.0 / COUNT(DISTINCT user_id)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, region]
+    unit: "%"
+
+  # ── 产品分析指标 ──
+  - id: product_sales
+    name: 产品销量
+    description: "产品销售数量。"
+    synonyms: ["销量", "销售数量", "件数", "销售件数"]
+    expression: "SUM(fct_orders.quantity)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, category, product_name]
+    unit: count
+
+  - id: sku_count
+    name: SKU数
+    description: "销售SKU数量。"
+    synonyms: ["SKU数", "SKU数量", "商品种类数"]
+    expression: "COUNT(DISTINCT fct_orders.product_id)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, category]
+    unit: count
+
+  - id: category_penetration
+    name: 品类渗透率
+    description: "某品类销售额占总销售额比例。"
+    synonyms: ["品类渗透率", "品类占比", "品类份额"]
+    expression: "SUM(CASE WHEN dim_product.category = '{category}' THEN fct_orders.sell_through ELSE 0 END) / SUM(fct_orders.sell_through)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, region]
+    unit: "%"
+
+  - id: top_products
+    name: 热销商品
+    description: "销售额TOP商品。"
+    synonyms: ["热销商品", "TOP商品", "畅销品", "爆款"]
+    expression: "ROW_NUMBER() OVER (ORDER BY SUM(fct_orders.sell_through) DESC)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    allowed_dimensions: [date, channel, category]
+    unit: rank
+    note: "需要配合LIMIT使用。"
+
+  # ── 营销分析指标 ──
+  - id: marketing_spend
+    name: 营销费用
+    description: "营销活动总花费。"
+    synonyms: ["营销费用", "广告费", "推广费", "投放费用", "marketing spend"]
+    expression: "SUM(fct_marketing.spend)"
+    base_table: fct_marketing
+    time_field: fct_marketing.date
+    allowed_dimensions: [date, campaign, ad_channel]
+    unit: CNY
+
+  - id: roi
+    name: ROI
+    description: "投资回报率 = (收入 - 成本) / 成本。"
+    synonyms: ["ROI", "投资回报率", "回报", "投入产出比"]
+    expression: "(SUM(fct_orders.sell_through) - SUM(fct_marketing.spend)) / NULLIF(SUM(fct_marketing.spend), 0)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    allowed_dimensions: [date, campaign, ad_channel]
+    unit: "ratio"
+    note: "需要JOIN营销表。"
+
+  - id: cpa
+    name: CPA
+    description: "单次获客成本。"
+    synonyms: ["CPA", "获客成本", "单客成本", "获客单价"]
+    expression: "SUM(fct_marketing.spend) / NULLIF(COUNT(DISTINCT fct_orders.user_id), 0)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    allowed_dimensions: [date, campaign, ad_channel]
+    unit: CNY
+
+  - id: conversion_rate
+    name: 转化率
+    description: "访客到下单的转化率。"
+    synonyms: ["转化率", "下单率", "成交率", "转化"]
+    expression: "COUNT(DISTINCT fct_orders.order_id) * 1.0 / NULLIF(SUM(fct_traffic.visits), 0)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    allowed_dimensions: [date, channel, campaign]
+    unit: "%"
+    note: "需要JOIN流量表。"
+
+  # ── 供应链分析指标 ──
+  - id: fulfillment_rate
+    name: 履约率
+    description: "按时发货订单占比。"
+    synonyms: ["履约率", "发货率", "按时发货率"]
+    expression: "SUM(CASE WHEN fct_orders.shipped_on_time = 1 THEN 1 ELSE 0 END) * 1.0 / COUNT(*)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    allowed_dimensions: [date, warehouse, logistics_provider]
+    unit: "%"
+
+  - id: return_rate
+    name: 退货率
+    description: "退货订单占比。"
+    synonyms: ["退货率", "退款率", "退换货率"]
+    expression: "SUM(CASE WHEN fct_orders.order_status = 'returned' THEN 1 ELSE 0 END) * 1.0 / COUNT(*)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    allowed_dimensions: [date, category, warehouse]
+    unit: "%"
+
+  - id: avg_delivery_days
+    name: 平均配送天数
+    description: "从下单到签收平均天数。"
+    synonyms: ["配送天数", "物流时效", "配送时效", "平均配送时间"]
+    expression: "AVG(JULIANDAY(fct_orders.delivered_at) - JULIANDAY(fct_orders.paid_at))"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    allowed_dimensions: [date, warehouse, logistics_provider, region]
+    unit: "days"
+
+  - id: inventory_turnover
+    name: 库存周转率
+    description: "销售成本 / 平均库存。"
+    synonyms: ["周转率", "库存周转", "库存周转率"]
+    expression: "SUM(fct_orders.cost) / NULLIF(AVG(dim_product.inventory), 0)"
+    base_table: fct_orders
+    time_field: fct_orders.paid_at
+    allowed_dimensions: [date, category, warehouse]
+    unit: "times"
+    note: "周转次数，越高越好。"

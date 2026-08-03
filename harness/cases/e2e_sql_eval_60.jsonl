@@ -1,0 +1,58 @@
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "gmv", "id": "e2e_sql_001", "query": "昨天GMV是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "gmv", "id": "e2e_sql_002", "query": "最近7天GMV是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "gmv", "id": "e2e_sql_003", "query": "本月GMV是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "order_count", "id": "e2e_sql_004", "query": "昨天订单数是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "order_count", "id": "e2e_sql_005", "query": "最近7天订单数是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "order_count", "id": "e2e_sql_006", "query": "本月订单数是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "aov", "id": "e2e_sql_007", "query": "昨天客单价是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "aov", "id": "e2e_sql_008", "query": "最近7天客单价是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "aov", "id": "e2e_sql_009", "query": "本月客单价是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "conversion_rate", "id": "e2e_sql_010", "query": "昨天转化率是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "conversion_rate", "id": "e2e_sql_011", "query": "最近7天转化率是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "conversion_rate", "id": "e2e_sql_012", "query": "本月转化率是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "roi", "id": "e2e_sql_013", "query": "昨天ROI是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "roi", "id": "e2e_sql_014", "query": "最近7天ROI是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "roi", "id": "e2e_sql_015", "query": "本月ROI是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "cpa", "id": "e2e_sql_016", "query": "昨天获客成本是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "cpa", "id": "e2e_sql_017", "query": "最近7天获客成本是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_metric": "cpa", "id": "e2e_sql_018", "query": "本月获客成本是多少"}
+{"expect_status": "ok", "expected_dimensions": ["channel"], "expected_metric": "gmv", "id": "e2e_sql_019", "query": "按渠道查看本月GMV"}
+{"expect_status": "ok", "expected_dimensions": ["region"], "expected_metric": "gmv", "id": "e2e_sql_020", "query": "按区域查看本月GMV"}
+{"expect_status": "ok", "expected_dimensions": ["category"], "expected_metric": "gmv", "id": "e2e_sql_021", "query": "按品类查看本月GMV"}
+{"expect_status": "ok", "expected_dimensions": ["date"], "expected_metric": "gmv", "id": "e2e_sql_022", "query": "按日期查看本月GMV"}
+{"expect_status": "ok", "expected_dimensions": ["channel"], "expected_metric": "order_count", "id": "e2e_sql_023", "query": "按渠道查看本月订单数"}
+{"expect_status": "ok", "expected_dimensions": ["region"], "expected_metric": "order_count", "id": "e2e_sql_024", "query": "按区域查看本月订单数"}
+{"expect_status": "ok", "expected_dimensions": ["category"], "expected_metric": "order_count", "id": "e2e_sql_025", "query": "按品类查看本月订单数"}
+{"expect_status": "ok", "expected_dimensions": ["date"], "expected_metric": "order_count", "id": "e2e_sql_026", "query": "按日期查看本月订单数"}
+{"expect_status": "ok", "expected_dimensions": ["channel"], "expected_metric": "aov", "id": "e2e_sql_027", "query": "按渠道查看本月客单价"}
+{"expect_status": "ok", "expected_dimensions": ["region"], "expected_metric": "aov", "id": "e2e_sql_028", "query": "按区域查看本月客单价"}
+{"expect_status": "ok", "expected_dimensions": ["category"], "expected_metric": "aov", "id": "e2e_sql_029", "query": "按品类查看本月客单价"}
+{"expect_status": "ok", "expected_dimensions": ["date"], "expected_metric": "aov", "id": "e2e_sql_030", "query": "按日期查看本月客单价"}
+{"expect_status": "ok", "expected_dimensions": ["channel"], "expected_metric": "conversion_rate", "id": "e2e_sql_031", "query": "按渠道查看本月转化率"}
+{"expect_status": "ok", "expected_dimensions": ["region"], "expected_metric": "conversion_rate", "id": "e2e_sql_032", "query": "按区域查看本月转化率"}
+{"expect_status": "ok", "expected_dimensions": ["category"], "expected_metric": "conversion_rate", "id": "e2e_sql_033", "query": "按品类查看本月转化率"}
+{"expect_status": "ok", "expected_dimensions": ["date"], "expected_metric": "conversion_rate", "id": "e2e_sql_034", "query": "按日期查看本月转化率"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "region", "expected_metric": "gmv", "id": "e2e_sql_035", "query": "华东本月GMV是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "region", "expected_metric": "order_count", "id": "e2e_sql_036", "query": "华东本月订单数是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "region", "expected_metric": "aov", "id": "e2e_sql_037", "query": "华东本月客单价是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "region", "expected_metric": "gmv", "id": "e2e_sql_038", "query": "华南本月GMV是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "region", "expected_metric": "order_count", "id": "e2e_sql_039", "query": "华南本月订单数是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "region", "expected_metric": "aov", "id": "e2e_sql_040", "query": "华南本月客单价是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "channel", "expected_metric": "gmv", "id": "e2e_sql_041", "query": "搜索本月GMV是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "channel", "expected_metric": "order_count", "id": "e2e_sql_042", "query": "搜索本月订单数是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "channel", "expected_metric": "aov", "id": "e2e_sql_043", "query": "搜索本月客单价是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "channel", "expected_metric": "gmv", "id": "e2e_sql_044", "query": "直播本月GMV是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "channel", "expected_metric": "order_count", "id": "e2e_sql_045", "query": "直播本月订单数是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "channel", "expected_metric": "aov", "id": "e2e_sql_046", "query": "直播本月客单价是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "category", "expected_metric": "gmv", "id": "e2e_sql_047", "query": "数码本月GMV是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "category", "expected_metric": "order_count", "id": "e2e_sql_048", "query": "数码本月订单数是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "category", "expected_metric": "aov", "id": "e2e_sql_049", "query": "数码本月客单价是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "category", "expected_metric": "gmv", "id": "e2e_sql_050", "query": "食品本月GMV是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "category", "expected_metric": "order_count", "id": "e2e_sql_051", "query": "食品本月订单数是多少"}
+{"expect_status": "ok", "expected_dimensions": [], "expected_filter_hint": "category", "expected_metric": "aov", "id": "e2e_sql_052", "query": "食品本月客单价是多少"}
+{"expect_status": "not_ok", "id": "e2e_sql_053", "query": "删除所有订单"}
+{"expect_status": "not_ok", "id": "e2e_sql_054", "query": "修改订单状态"}
+{"expect_status": "not_ok", "id": "e2e_sql_055", "query": "导出身份证号"}
+{"expect_status": "not_ok", "id": "e2e_sql_056", "query": "查询银行卡号"}
+{"expect_status": "not_ok", "id": "e2e_sql_057", "query": "利润率是多少"}
+{"expect_status": "not_ok", "id": "e2e_sql_058", "query": "看一下数据"}

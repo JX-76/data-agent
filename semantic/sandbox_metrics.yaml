@@ -1,0 +1,30 @@
+metrics:
+  - id: sandbox_gmv
+    name: GMV
+    synonyms: [GMV, 销售额, 成交额]
+    expression: "SUM(orders.gmv)"
+    base_table: orders
+    time_field: order_date
+    default_filters: ["orders.status = 'paid'"]
+    allowed_dimensions: [date, channel, region, category]
+    unit: yuan
+    caveats: ["GMV 不扣退款；如果问净收入，应使用 net_gmv。"]
+  - id: net_gmv
+    name: 净GMV
+    synonyms: [净收入, 净GMV, 扣退款销售额]
+    expression: "SUM(orders.gmv - orders.refund_amount)"
+    base_table: orders
+    time_field: order_date
+    default_filters: ["orders.status IN ('paid', 'refunded')"]
+    allowed_dimensions: [date, channel, region, category]
+    unit: yuan
+  - id: sandbox_roi
+    name: ROI
+    synonyms: [ROI, 投产比, 投入产出比]
+    expression: "SUM(orders.gmv) / NULLIF(SUM(orders.ad_cost), 0)"
+    base_table: orders
+    time_field: order_date
+    default_filters: ["orders.status = 'paid'", "orders.ad_cost > 0"]
+    allowed_dimensions: [date, channel, region]
+    unit: ratio
+    caveats: ["ROI 依赖 ad_cost，非投放渠道可能没有广告成本。"]

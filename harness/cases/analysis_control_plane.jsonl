@@ -1,0 +1,6 @@
+{"case_id":"analysis_contract_traceability","description":"analysis contract includes data/scope/chart/evidence lineage","kind":"contract","expected":{"valid":true}}
+{"case_id":"data_change_invalidates_downstream","description":"changing filters or time range requires recompute and invalidates dependent evidence/chart/claims","kind":"negative","expected":{"requires_recompute":true,"state":"needs_recompute"}}
+{"case_id":"chart_change_is_local","description":"changing chart presentation does not issue query or discard evidence","kind":"contract","expected":{"requires_recompute":false}}
+{"case_id":"unsupported_fact_downgrade","description":"fact claim without evidence becomes evidence-limited hypothesis","kind":"negative","expected":{"release_allowed":false}}
+{"case_id":"unknown_receipt_stale_propagation","description":"unknown upstream execution makes report dependencies stale","kind":"failure","expected":{"state":"stale"}}
+{"case_id":"user_dispute_recompute_plan","description":"data dispute generates correction and recompute plan rather than freeform rewrite","kind":"workflow","expected":{"requires_release_gate":true}}

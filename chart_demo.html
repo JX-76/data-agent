@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Agent — 最近7天各品类 GMV 分析</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fa; }
+  .container { max-width: 1000px; margin: 0 auto; padding: 24px; }
+  .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 32px; border-radius: 12px; margin-bottom: 24px; }
+  .header h1 { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+  .header .query { opacity: 0.85; font-size: 14px; }
+  .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .card-title { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+  .chart-container { width: 100%; height: 420px; }
+  .insight-box { background: #f0f4ff; border-left: 4px solid #667eea; padding: 16px 20px; border-radius: 0 8px 8px 0; line-height: 1.8; color: #333; }
+  .sql-box { background: #1e1e1e; color: #d4d4d4; padding: 16px 20px; border-radius: 8px; font-family: "Fira Code", "Cascadia Code", monospace; font-size: 13px; line-height: 1.6; overflow-x: auto; white-space: pre-wrap; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .stat-card { background: #f8f9fc; border-radius: 8px; padding: 16px; text-align: center; }
+  .stat-value { font-size: 24px; font-weight: 700; color: #667eea; }
+  .stat-label { font-size: 12px; color: #888; margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f0f4ff; padding: 10px 12px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #ddd; }
+  td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+  tr:hover { background: #fafbff; }
+  .footer { text-align: center; color: #999; font-size: 12px; margin-top: 32px; padding: 16px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>📊 最近7天各品类 GMV 分析</h1>
+    <div class="query">Query: 最近7天各品类 GMV</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💡 分析洞察</div>
+    <div class="insight-box">分析生成失败: Unterminated string starting at: line 26 column 15 (char 779)</div>
+  </div>
+
+  <div class="card"><div class="card-title">📊 统计概览</div><div class="stat-grid"><div class="stat-card"><div class="stat-value">20</div><div class="stat-label">数据行数</div></div><div class="stat-card"><div class="stat-value">8353.35</div><div class="stat-label">__sell_through 总计</div></div><div class="stat-card"><div class="stat-value">417.67</div><div class="stat-label">__sell_through 均值</div></div><div class="stat-card"><div class="stat-value">7758.02</div><div class="stat-label">__unit_price 总计</div></div><div class="stat-card"><div class="stat-value">387.9</div><div class="stat-label">__unit_price 均值</div></div></div></div>
+
+  <div class="card">
+    <div class="card-title">📈 可视化</div>
+    <div id="chart" class="chart-container"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 数据表格</div>
+    <table><thead><tr><th>date</th><th>channel</th><th>category</th></tr></thead><tbody><tr><td>2026-06-29</td><td>online</td><td>数码</td></tr><tr><td>2026-06-26</td><td>live</td><td>家居</td></tr><tr><td>2026-06-25</td><td>offline</td><td>数码</td></tr><tr><td>2026-06-27</td><td>live</td><td>男装</td></tr><tr><td>2026-06-28</td><td>online</td><td>女装</td></tr><tr><td>2026-06-30</td><td>online</td><td>家居</td></tr><tr><td>2026-06-27</td><td>online</td><td>美妆</td></tr><tr><td>2026-06-25</td><td>offline</td><td>家居</td></tr><tr><td>2026-06-27</td><td>offline</td><td>家居</td></tr><tr><td>2026-06-26</td><td>live</td><td>家居</td></tr><tr><td>2026-06-28</td><td>online</td><td>女装</td></tr><tr><td>2026-06-25</td><td>offline</td><td>女装</td></tr><tr><td>2026-06-25</td><td>live</td><td>数码</td></tr><tr><td>2026-06-30</td><td>online</td><td>男装</td></tr><tr><td>2026-06-25</td><td>offline</td><td>美妆</td></tr><tr><td>2026-06-24</td><td>offline</td><td>家居</td></tr><tr><td>2026-06-30</td><td>online</td><td>女装</td></tr><tr><td>2026-06-26</td><td>live</td><td>美妆</td></tr><tr><td>2026-06-28</td><td>live</td><td>男装</td></tr><tr><td>2026-06-29</td><td>live</td><td>女装</td></tr></tbody></table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔍 生成的 SQL</div>
+    <div class="sql-box">WITH
+d1 AS (
+SELECT DATE(fct_orders.paid_at) AS date, fct_orders.channel AS channel, dim_product.category AS category, fct_orders.sell_through AS __sell_through, fct_orders.order_id AS __order_id, fct_orders.paid_at AS __paid_at, fct_orders.order_status AS __order_status, dim_product.unit_price AS __unit_price
+FROM fct_orders
+LEFT JOIN dim_store ON fct_orders.store_id = dim_store.store_id
+LEFT JOIN dim_product ON fct_orders.product_id = dim_product.product_id
+),
+d3 AS (
+SELECT *
+FROM d1
+WHERE __paid_at >= '2026-06-24 00:00:00' AND __paid_at < '2026-07-01 00:00:00' AND __order_status IN ('paid', 'completed')
+)
+SELECT * FROM d3
+LIMIT 20</div>
+  </div>
+
+  <div class="footer">Generated by Data Agent (Nucleus) · 2026-07-01 00:40</div>
+</div>
+
+<script>
+  var chartDom = document.getElementById('chart');
+  var myChart = echarts.init(chartDom);
+  var option = {"title": {"text": "结果", "left": "center"}, "xAxis": {"type": "category", "data": []}, "yAxis": {"type": "value"}, "series": []};
+  myChart.setOption(option);
+  window.addEventListener('resize', function() { myChart.resize(); });
+</script>
+</body>
+</html>

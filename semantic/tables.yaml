@@ -1,0 +1,45 @@
+version: "1.0"
+tables:
+  - name: fct_orders
+    allowed: true
+    table_role: fact
+    grain: [order_id]
+    primary_key: order_id
+    time_fields: [paid_at]
+    columns:
+      - order_id
+      - store_id
+      - product_id
+      - channel
+      - order_status
+      - sell_through
+      - paid_at
+  - name: dim_store
+    allowed: true
+    table_role: dimension
+    grain: [store_id]
+    primary_key: store_id
+    columns:
+      - store_id
+      - region
+  - name: dim_product
+    allowed: true
+    table_role: dimension
+    grain: [product_id]
+    primary_key: product_id
+    columns:
+      - product_id
+      - product_name
+      - category
+      - unit_price
+joins:
+  - id: orders_to_store
+    left_table: fct_orders
+    right_table: dim_store
+    condition: "fct_orders.store_id = dim_store.store_id"
+    cardinality: many_to_one
+  - id: orders_to_product
+    left_table: fct_orders
+    right_table: dim_product
+    condition: "fct_orders.product_id = dim_product.product_id"
+    cardinality: many_to_one

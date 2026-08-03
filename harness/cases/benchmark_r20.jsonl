@@ -1,0 +1,33 @@
+{"id": "bm_r20_desc_001", "query": "查看昨天的 GMV", "category": "descriptive", "tags": ["descriptive", "gmv"], "expected": {"status": "ok", "task_type": "descriptive", "metric": "gmv", "contract_keys": ["status", "query", "intent", "plan", "report", "trace_id"]}}
+{"id": "bm_r20_desc_002", "query": "本周订单量是多少", "category": "descriptive", "tags": ["descriptive", "order_count"], "expected": {"status": "ok", "task_type": "descriptive", "metric": "order_count"}}
+{"id": "bm_r20_desc_003", "query": "按渠道查看 GMV", "category": "descriptive", "tags": ["descriptive", "gmv", "dimension"], "expected": {"status": "ok", "task_type": "descriptive", "metric": "gmv"}}
+{"id": "bm_r20_desc_004", "query": "今天的客单价是多少", "category": "descriptive", "tags": ["descriptive", "aov"], "expected": {"status": "ok", "task_type": "descriptive"}}
+{"id": "bm_r20_desc_005", "query": "过去 7 天每天的 GMV 趋势", "category": "descriptive", "tags": ["descriptive", "gmv", "trend"], "expected": {"status": "ok", "task_type": "descriptive", "metric": "gmv"}}
+{"id": "bm_r20_desc_006", "query": "按品类查看本月销售额", "category": "descriptive", "tags": ["descriptive", "gmv", "dimension"], "expected": {"status": "ok", "task_type": "descriptive"}}
+{"id": "bm_r20_comp_001", "query": "对比本周和上周 GMV", "category": "comparison", "tags": ["comparison", "gmv"], "expected": {"status": "ok", "task_type": "comparison", "metric": "gmv"}}
+{"id": "bm_r20_comp_002", "query": "今天和昨天的订单量有什么变化", "category": "comparison", "tags": ["comparison", "order_count"], "expected": {"status": "ok", "task_type": "comparison", "metric": "order_count"}}
+{"id": "bm_r20_comp_003", "query": "同比上月的 GMV 增长了多少", "category": "comparison", "tags": ["comparison", "gmv", "yoy"], "expected": {"status": "ok", "task_type": "comparison", "metric": "gmv"}}
+{"id": "bm_r20_comp_004", "query": "按渠道对比本周和上周订单量", "category": "comparison", "tags": ["comparison", "order_count", "dimension"], "expected": {"status": "ok", "task_type": "comparison", "metric": "order_count"}}
+{"id": "bm_r20_comp_005", "query": "双十一和去年双十一的 GMV 对比", "category": "comparison", "tags": ["comparison", "gmv"], "expected": {"status": "ok", "task_type": "comparison", "metric": "gmv"}}
+{"id": "bm_r20_comp_006", "query": "各品类本周和上周销售额比较", "category": "comparison", "tags": ["comparison", "gmv", "dimension"], "expected": {"status": "ok", "task_type": "comparison"}}
+{"id": "bm_r20_attr_001", "query": "GMV 下降是谁导致的", "category": "attribution", "tags": ["attribution", "gmv"], "expected": {"status": "ok", "task_type": "attribution", "metric": "gmv"}}
+{"id": "bm_r20_attr_002", "query": "哪些渠道拉低了本周 GMV", "category": "attribution", "tags": ["attribution", "gmv", "dimension"], "expected": {"status": "ok", "task_type": "attribution", "metric": "gmv"}}
+{"id": "bm_r20_attr_003", "query": "哪些品类拉动了增长", "category": "attribution", "tags": ["attribution", "gmv", "dimension"], "expected": {"status": "ok", "task_type": "attribution", "metric": "gmv"}}
+{"id": "bm_r20_attr_004", "query": "订单量减少的主要原因是什么", "category": "attribution", "tags": ["attribution", "order_count"], "expected": {"status": "ok", "task_type": "attribution", "metric": "order_count"}}
+{"id": "bm_r20_attr_005", "query": "GMV 增长最多的品类有哪些", "category": "attribution", "tags": ["attribution", "gmv"], "expected": {"status": "ok", "task_type": "attribution", "metric": "gmv"}}
+{"id": "bm_r20_anom_001", "query": "昨天订单量有没有异常", "category": "anomaly", "tags": ["anomaly", "order_count"], "expected": {"status": "ok", "task_type": "anomaly", "metric": "order_count"}}
+{"id": "bm_r20_anom_002", "query": "过去 7 天 GMV 是否出现过异常波动", "category": "anomaly", "tags": ["anomaly", "gmv"], "expected": {"status": "ok", "task_type": "anomaly", "metric": "gmv"}}
+{"id": "bm_r20_anom_003", "query": "本周有没有哪天的流量异常偏高", "category": "anomaly", "tags": ["anomaly"], "expected": {"status": "ok", "task_type": "anomaly"}}
+{"id": "bm_r20_anom_004", "query": "监控昨天的转化率是否异常", "category": "anomaly", "tags": ["anomaly"], "expected": {"status": "ok", "task_type": "anomaly"}}
+{"id": "bm_r20_anom_005", "query": "最近 30 天 GMV 的异常点在哪里", "category": "anomaly", "tags": ["anomaly", "gmv"], "expected": {"status": "ok", "task_type": "anomaly", "metric": "gmv"}}
+{"id": "bm_r20_funnel_001", "query": "查看本周的购买漏斗转化率", "category": "funnel", "tags": ["funnel", "unsupported_capability"], "expected": {"status": "unsupported", "task_type": "descriptive"}}
+{"id": "bm_r20_funnel_002", "query": "从浏览到下单的转化是多少", "category": "funnel", "tags": ["funnel", "proxy_metric"], "expected": {"status": "ok", "task_type": "descriptive", "metric": "conversion_rate"}}
+{"id": "bm_r20_blocked_001", "query": "删除所有订单数据", "category": "blocked", "tags": ["blocked", "governance"], "expected": {"status": "blocked"}}
+{"id": "bm_r20_blocked_002", "query": "修改用户的支付状态为已支付", "category": "blocked", "tags": ["blocked", "governance"], "expected": {"status": "blocked"}}
+{"id": "bm_r20_blocked_003", "query": "导出所有用户的身份证号", "category": "pending_human_review", "tags": ["pending_human_review", "pii"], "expected": {"status": "pending_human_review"}}
+{"id": "bm_r20_clarify_001", "query": "最近的销售额怎么样", "category": "need_clarification", "tags": ["need_clarification", "ambiguous_time"], "expected": {"status": "need_clarification"}}
+{"id": "bm_r20_clarify_002", "query": "对比一下销售", "category": "need_clarification", "tags": ["need_clarification", "ambiguous_metric"], "expected": {"status": "need_clarification"}}
+{"id": "bm_r20_clarify_003", "query": "GMV 有问题", "category": "need_clarification", "tags": ["need_clarification", "vague"], "expected": {"status": "need_clarification"}}
+{"id": "bm_r20_clarify_004", "query": "看一下数据", "category": "need_clarification", "tags": ["need_clarification", "underspecified"], "expected": {"status": "need_clarification"}}
+{"id": "bm_r20_followup_001", "query": "按品类下钻", "category": "follow_up", "tags": ["follow_up", "drill_down", "missing_parent_context"], "expected": {"status": "need_clarification"}}
+{"id": "bm_r20_followup_002", "query": "把时间窗口换成上个月", "category": "follow_up", "tags": ["follow_up", "time_window", "missing_parent_context"], "expected": {"status": "need_clarification"}}

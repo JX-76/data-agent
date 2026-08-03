@@ -1,0 +1,45 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contract-and-regression:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: data-agent-mvp
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run production smoke checks
+        run: |
+          python scripts/run_smoke.py
+
+      - name: Run deterministic basecase eval gate
+        run: |
+          python scripts/run_basecase_eval.py
+
+      - name: Run harness regression gate
+        run: |
+          python scripts/run_harness_gate.py all
+
+      - name: Run harness coverage report
+        run: |
+          python scripts/harness_coverage_report.py all
+
+      - name: Run contract and regression tests
+        run: |
+          pytest tests/test_contracts.py tests/test_context_compat.py tests/test_complex_agent_regression.py tests/test_execution_retry.py tests/test_eval_baseline.py tests/test_semantic_registry.py tests/test_router_core.py tests/test_production_gate.py -q

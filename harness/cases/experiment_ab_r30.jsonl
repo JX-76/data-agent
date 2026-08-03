@@ -1,0 +1,8 @@
+{"id":"ab_001","query":"A/B实验转化率对比","expect_status_any":["need_clarification","ok"],"tags":["experiment","missing_definition"]}
+{"id":"ab_002","query":"实验组和对照组GMV比较","expect_status_any":["need_clarification","ok"],"tags":["experiment","continuous"]}
+{"id":"ab_003","query":"A/B实验显著性","expect_status_any":["need_clarification","ok"],"tags":["experiment","significance"]}
+{"id":"ab_004","query":"实验组对照组转化率","expect_status_any":["need_clarification","ok"],"tags":["experiment","conversion"]}
+{"id":"ab_005","query":"experiment result","expect_status_any":["need_clarification","ok"],"tags":["experiment","tenant"]}
+{"id":"ab_006","query":"A/B实验样本量是否足够","expect_status_any":["need_clarification","ok"],"tags":["experiment","sample"]}
+{"id":"ab_007","query":"对照组和实验组是否有污染","expect_status_any":["need_clarification","ok"],"tags":["experiment","contamination"]}
+{"id":"ab_008","query":"观察性实验组对比","expect_status_any":["need_clarification","ok"],"tags":["experiment","observational"]}

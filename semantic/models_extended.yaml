@@ -1,0 +1,166 @@
+version: "1.0"
+# 扩展模型定义 - 用户分析、产品分析、营销分析、供应链分析
+
+models:
+  # ── 基础模型 (原有) ──
+  - id: order_detail
+    name: 订单明细模型
+    description: "面向 AI 调用层的单表语义视图，一人一单粒度。"
+    base_table: fct_orders
+    joins:
+      - orders_to_store
+    visible_dimensions: [date, channel, region]
+    default_time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    notes:
+      - "Agent 只能看到这个逻辑单表视图，不直接面对底层 join。"
+
+  - id: user_summary
+    name: 用户概览模型
+    description: "面向用户口径确认与概览分析的第二语义视角。"
+    base_table: fct_orders
+    joins:
+      - orders_to_store
+    visible_dimensions: [date, channel]
+    default_time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    notes:
+      - "用于验证 switch() 是否能真正切换语义视角。"
+
+  - id: product_analysis
+    name: 商品分析模型
+    description: "面向商品维度的分析视角，连接产品维表，支持品类分析。"
+    base_table: fct_orders
+    joins:
+      - orders_to_store
+      - orders_to_product
+    visible_dimensions: [date, channel, category]
+    default_time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    notes:
+      - "与 order_detail 不同：底层 join 了 dim_product，暴露 category 维度。"
+      - "真正不同的主题域，验证 switch() 跨视角能力。"
+
+  # ── 用户分析模型 ──
+  - id: user_analysis
+    name: 用户分析模型
+    description: "面向用户行为分析的语义视图，支持新老客、留存、LTV等分析。"
+    base_table: fct_orders
+    joins:
+      - orders_to_store
+      - orders_to_user
+    visible_dimensions: [date, channel, region, user_type, user_age_group, user_gender, user_city]
+    default_time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    metrics: [user_count, new_users, retention_rate, user_ltv, repurchase_rate]
+    notes:
+      - "用户分析专用模型，支持新老客分析。"
+      - "需要JOIN用户维表获取用户属性。"
+
+  - id: user_cohort
+    name: 用户 cohort 模型
+    description: "面向用户留存分析的 cohort 视角。"
+    base_table: fct_orders
+    joins:
+      - orders_to_user
+    visible_dimensions: [registration_date, channel, user_age_group]
+    default_time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    metrics: [retention_rate, user_ltv, repurchase_rate]
+    notes:
+      - "Cohort分析专用模型，按注册日期分组。"
+      - "支持计算次日/7日/30日留存。"
+
+  # ── 产品分析模型 ──
+  - id: product_performance
+    name: 产品绩效模型
+    description: "面向产品销售绩效分析的语义视图。"
+    base_table: fct_orders
+    joins:
+      - orders_to_product
+      - orders_to_store
+    visible_dimensions: [date, channel, category, product_name, brand, price_range]
+    default_time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    metrics: [product_sales, sku_count, gmv, avg_price, category_penetration]
+    notes:
+      - "产品分析专用模型，支持品类、品牌、价格段分析。"
+      - "可以计算品类渗透率、品牌份额等。"
+
+  - id: inventory_analysis
+    name: 库存分析模型
+    description: "面向库存管理的语义视图，支持周转率、缺货分析。"
+    base_table: fct_orders
+    joins:
+      - orders_to_product
+      - orders_to_warehouse
+    visible_dimensions: [date, category, warehouse, product_name]
+    default_time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    metrics: [inventory_turnover, product_sales, gmv]
+    notes:
+      - "库存分析专用模型，需要JOIN仓库维表。"
+      - "支持计算库存周转率、缺货率等。"
+
+  # ── 营销分析模型 ──
+  - id: marketing_analysis
+    name: 营销分析模型
+    description: "面向营销活动效果分析的语义视图。"
+    base_table: fct_marketing
+    joins:
+      - orders_to_marketing
+    visible_dimensions: [date, campaign, ad_channel, ad_type, creative]
+    default_time_field: fct_marketing.date
+    metrics: [marketing_spend, roi, cpa, conversion_rate, gmv]
+    notes:
+      - "营销分析专用模型，以营销表为主表。"
+      - "支持计算ROI、CPA、转化率等。"
+
+  - id: attribution_analysis
+    name: 归因分析模型
+    description: "面向多渠道归因分析的语义视图。"
+    base_table: fct_orders
+    joins:
+      - orders_to_marketing
+    visible_dimensions: [date, channel, ad_channel, campaign]
+    default_time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    metrics: [gmv, order_count, roi, cpa]
+    notes:
+      - "归因分析专用模型，支持多渠道贡献分析。"
+      - "可以计算各渠道对GMV的贡献度。"
+
+  # ── 供应链分析模型 ──
+  - id: supply_chain
+    name: 供应链分析模型
+    description: "面向供应链效率分析的语义视图。"
+    base_table: fct_orders
+    joins:
+      - orders_to_warehouse
+    visible_dimensions: [date, warehouse, logistics_provider, region, delivery_status]
+    default_time_field: fct_orders.paid_at
+    metrics: [fulfillment_rate, return_rate, avg_delivery_days, gmv, order_count]
+    notes:
+      - "供应链分析专用模型，支持履约率、退货率分析。"
+      - "可以计算各仓库、物流商的效率。"
+
+  - id: logistics_analysis
+    name: 物流分析模型
+    description: "面向物流效率分析的语义视图。"
+    base_table: fct_orders
+    joins:
+      - orders_to_warehouse
+    visible_dimensions: [date, warehouse, logistics_provider, region]
+    default_time_field: fct_orders.paid_at
+    metrics: [avg_delivery_days, fulfillment_rate, return_rate, gmv]
+    notes:
+      - "物流分析专用模型，支持时效、成本分析。"
+      - "可以计算各物流商的配送时效。"

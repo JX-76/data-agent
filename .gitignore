@@ -1,0 +1,82 @@
+# Python bytecode and interpreter caches
+*.py[cod]
+__pycache__/
+
+# Test, coverage, model, and local runtime caches
+.pytest_cache/
+.coverage
+htmlcov/
+.cache/
+.deepeval/
+.mypy_cache/
+.ruff_cache/
+
+# Environment files, credentials, and local editor metadata
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+.venv/
+venv/
+env/
+.vscode/
+.idea/
+
+# Internal development documentation, reports, and evaluation materials are
+# intentionally excluded from the public source release.
+docs/
+evaluation/
+evals/
+*_REPORT.md
+*_PLAN.md
+*_COMPLETE.md
+*_FIXES.md
+ANALYSIS_SURVEY_REPORT.md
+API_OPTIMIZATION.md
+EXTREME_TEST_REPORT.md
+FUNCTION_ANALYSIS.md
+OPTIMIZATION_LOG.md
+ROUTING_RULES.md
+SCENE_IMPLEMENTATION.md
+SCENE_THINKING.md
+SEMANTIC_LAYER_DESIGN.md
+SEMANTIC_LAYER_COMPLETE.md
+TEST_REPORT.md
+TEST_REPORT_COMPLETE.md
+
+# Local execution state and generated outputs. These may include audit traces,
+# user/session data, prompts, model responses, or large reproducible reports.
+artifacts/
+sessions/
+flywheel_data/
+harness/reports/
+harness/diffs/
+harness/replays/
+harness/snapshots/
+scripts/dev/
+*.log
+*.out
+*.err
+*.pid
+*.sqlite
+*.sqlite3
+*.db
+
+# Downloaded/source datasets are local-only. Version only deterministic test
+# fixtures and documented manifest/schema files under fixtures/ and evaluation/.
+data/public_ecommerce/
+data/private/
+data/raw/
+data/processed/
+
+# Local internal working notes and assistant prompts are not part of releases.
+.claude_batch_*.txt
+
+# OS files
+.DS_Store
+Thumbs.db

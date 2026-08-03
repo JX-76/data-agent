@@ -1,0 +1,42 @@
+version: "1.0"
+models:
+  - id: order_detail
+    name: 订单明细模型
+    description: "面向 AI 调用层的单表语义视图，一人一单粒度。"
+    base_table: fct_orders
+    joins:
+      - orders_to_store
+    visible_dimensions: [date, channel, region]
+    default_time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    notes:
+      - "Agent 只能看到这个逻辑单表视图，不直接面对底层 join。"
+
+  - id: user_summary
+    name: 用户概览模型
+    description: "面向用户口径确认与概览分析的第二语义视角。"
+    base_table: fct_orders
+    joins:
+      - orders_to_store
+    visible_dimensions: [date, channel]
+    default_time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    notes:
+      - "用于验证 switch() 是否能真正切换语义视角。"
+
+  - id: product_analysis
+    name: 商品分析模型
+    description: "面向商品维度的分析视角，连接产品维表，支持品类分析。"
+    base_table: fct_orders
+    joins:
+      - orders_to_store
+      - orders_to_product
+    visible_dimensions: [date, channel, category]
+    default_time_field: fct_orders.paid_at
+    default_filters:
+      - "fct_orders.order_status IN ('paid', 'completed')"
+    notes:
+      - "与 order_detail 不同：底层 join 了 dim_product，暴露 category 维度。"
+      - "真正不同的主题域，验证 switch() 跨视角能力。"

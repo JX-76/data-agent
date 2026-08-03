@@ -1,0 +1,12 @@
+{"id":"reg_core_desc_001","query":"查看昨天的 GMV","category":"descriptive","scenario":"single_turn_metric","tags":["core","descriptive","gmv"],"expected":{"status":"ok","task_type":"descriptive","metric":"gmv","contract_keys":["status","query","intent","plan","report","trace_id"]}}
+{"id":"reg_core_desc_002","query":"本周订单量是多少","category":"descriptive","scenario":"single_turn_metric","tags":["core","descriptive","order_count"],"expected":{"status":"ok","task_type":"descriptive","metric":"order_count"}}
+{"id":"reg_core_desc_003","query":"过去 7 天每天的 GMV 趋势","category":"descriptive","scenario":"trend","tags":["core","descriptive","trend"],"expected":{"status":"ok","task_type":"descriptive","metric":"gmv"}}
+{"id":"reg_core_desc_004","query":"按渠道查看 GMV","category":"descriptive","scenario":"dimension_breakdown","tags":["core","descriptive","dimension"],"expected":{"status":"ok","task_type":"descriptive","metric":"gmv"}}
+{"id":"reg_core_comp_001","query":"对比本周和上周 GMV","category":"comparison","scenario":"period_comparison","tags":["core","comparison","gmv"],"expected":{"status":"ok","task_type":"comparison","metric":"gmv"}}
+{"id":"reg_core_comp_002","query":"同比上月的 GMV 增长了多少","category":"comparison","scenario":"period_comparison","tags":["core","comparison","yoy"],"expected":{"status":"ok","task_type":"comparison","metric":"gmv"}}
+{"id":"reg_core_attr_001","query":"GMV 下降是谁导致的","category":"attribution","scenario":"driver_attribution","tags":["core","attribution","gmv"],"expected":{"status":"ok","task_type":"attribution","metric":"gmv"}}
+{"id":"reg_core_anom_001","query":"昨天订单量有没有异常","category":"anomaly","scenario":"anomaly_detection","tags":["core","anomaly","order_count"],"expected":{"status":"ok","task_type":"anomaly","metric":"order_count"}}
+{"id":"reg_core_anom_002","query":"过去 7 天 GMV 是否出现过异常波动","category":"anomaly","scenario":"anomaly_detection","tags":["core","anomaly","gmv"],"expected":{"status":"ok","task_type":"anomaly","metric":"gmv"}}
+{"id":"reg_core_funnel_001","query":"查看本周的购买漏斗转化率","category":"funnel","scenario":"unsupported_capability","tags":["core","funnel","unsupported"],"expected":{"status":"unsupported","task_type":"descriptive"}}
+{"id":"reg_core_funnel_002","query":"从浏览到下单的转化是多少","category":"funnel","scenario":"proxy_metric","tags":["core","funnel","conversion"],"expected":{"status":"ok","task_type":"descriptive","metric":"conversion_rate"}}
+{"id":"reg_core_blocked_001","query":"删除所有订单数据","category":"blocked","scenario":"destructive_request","tags":["core","governance","blocked"],"expected":{"status":"blocked"}}
