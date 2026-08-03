@@ -114,6 +114,14 @@ class ResumeRequest(BaseModel):
     choice_id: str
 
 
+class ProviderConfigRequest(BaseModel):
+    """Local single-user DeepSeek configuration; API key is write-only."""
+    provider: str = Field(default="deepseek", min_length=1, max_length=40)
+    api_key: Optional[str] = Field(default=None, min_length=4, max_length=512)
+    base_url: Optional[str] = Field(default=None, max_length=500)
+    model: Optional[str] = Field(default=None, max_length=160)
+
+
 class QueryResponse(BaseModel):
     status: str
     intent: Optional[str] = None
@@ -538,6 +546,70 @@ def _safe_prompt_history_item(item):
 
 
 # ── Routes ──
+
+@app.get("/api/provider-config")
+async def get_provider_config(_auth: None = Depends(verify_api_key)):
+    """Return safe provider configuration metadata; API keys are never returned."""
+    from user_provider_config import LocalProviderConfigStore, default_public_view, public_view
+    record = LocalProviderConfigStore().load()
+    return public_view(record) if record else default_public_view()
+
+
+@app.post("/api/provider-config")
+async def save_provider_config(req: ProviderConfigRequest, _auth: None = Depends(verify_api_key)):
+    """Save a local single-user provider configuration without returning its key."""
+    from user_provider_config import LocalProviderConfigStore, ProviderConfigError, public_view
+    try:
+        record = LocalProviderConfigStore().save(
+            provider=req.provider, api_key=req.api_key, base_url=req.base_url, model=req.model)
+        logger.info("provider_config_saved", provider=record.get("provider"), source="user_config")
+        return public_view(record)
+    except ProviderConfigError as exc:
+        return JSONResponse({"contract": "user_provider_config_v1", "status": "error",
+                             "error": {"code": exc.code, "message": exc.message}}, status_code=400)
+
+
+@app.post("/api/provider-config/validate")
+async def validate_provider_config(_auth: None = Depends(verify_api_key)):
+    """Perform a minimal authenticated provider check; no provider response is exposed."""
+    from user_provider_config import LocalProviderConfigStore, ProviderConfigError, public_view
+    from deepseek_adapter import DeepSeekAdapter, DeepSeekError
+    store = LocalProviderConfigStore()
+    record = store.load()
+    if not record:
+        return JSONResponse({"contract": "user_provider_config_v1", "status": "error",
+                             "error": {"code": "not_configured", "message": "请先保存 API 配置。"}}, status_code=400)
+    try:
+        adapter = DeepSeekAdapter(provider_store=store)
+        adapter._request_json("/models", timeout_seconds=min(adapter.timeout_seconds, 15.0))
+        record = store.mark_validated("validated")
+        logger.info("provider_config_validated", provider=record.get("provider"), source="user_config")
+        return public_view(record)
+    except (DeepSeekError, ProviderConfigError) as exc:
+        code = getattr(exc, "code", "validation_failed")
+        try:
+            record = store.mark_validated("validation_failed")
+            body = public_view(record)
+        except ProviderConfigError:
+            body = {"contract": "user_provider_config_v1", "provider": "deepseek", "status": "validation_failed"}
+        body["error"] = {"code": code, "message": "Provider 连接校验失败，请检查 Key、Base URL、模型权限或网络。"}
+        return JSONResponse(body, status_code=400)
+
+
+@app.delete("/api/provider-config")
+async def delete_provider_config(_auth: None = Depends(verify_api_key)):
+    """Delete the local user configuration and fall back to environment settings."""
+    from user_provider_config import LocalProviderConfigStore, ProviderConfigError, default_public_view
+    try:
+        deleted = LocalProviderConfigStore().delete()
+        logger.info("provider_config_deleted", source="user_config", deleted=deleted)
+        result = default_public_view()
+        result["deleted"] = deleted
+        return result
+    except ProviderConfigError as exc:
+        return JSONResponse({"contract": "user_provider_config_v1", "status": "error",
+                             "error": {"code": exc.code, "message": exc.message}}, status_code=400)
+
 
 @app.get("/health", response_model=HealthResponse)
 async def health():

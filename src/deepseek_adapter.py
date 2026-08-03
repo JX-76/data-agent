@@ -71,12 +71,23 @@ class DeepSeekError(Exception):
 class DeepSeekAdapter(object):
     contract = "deepseek_api_adapter_v1"
 
-    def __init__(self, base_url=None, model=None, api_key=None, timeout_seconds=None, opener=None, env_path=None):
+    def __init__(self, base_url=None, model=None, api_key=None, timeout_seconds=None, opener=None, env_path=None, provider_store=None):
         load_project_env(env_path)
-        self.base_url = (base_url or os.environ.get("DATA_AGENT_DEEPSEEK_BASE_URL") or
-                         os.environ.get("DEEPSEEK_BASE_URL") or DEFAULT_BASE_URL).rstrip("/")
-        self.model = model or os.environ.get("DATA_AGENT_DEEPSEEK_MODEL") or os.environ.get("DEEPSEEK_MODEL") or DEFAULT_MODEL
-        self.api_key = api_key or os.environ.get("DATA_AGENT_DEEPSEEK_API_KEY") or os.environ.get("DEEPSEEK_API_KEY")
+        runtime_config = None
+        if not (base_url or model or api_key):
+            try:
+                from user_provider_config import get_runtime_provider_config
+                runtime_config = get_runtime_provider_config(provider_store)
+            except Exception:
+                # Provider settings are optional; the existing environment fallback
+                # remains available even when a local settings file is unreadable.
+                runtime_config = None
+        runtime_config = runtime_config or {}
+        self.base_url = (base_url or runtime_config.get("base_url") or os.environ.get("DATA_AGENT_DEEPSEEK_BASE_URL") or
+                          os.environ.get("DEEPSEEK_BASE_URL") or DEFAULT_BASE_URL).rstrip("/")
+        self.model = model or runtime_config.get("model") or os.environ.get("DATA_AGENT_DEEPSEEK_MODEL") or os.environ.get("DEEPSEEK_MODEL") or DEFAULT_MODEL
+        self.api_key = api_key or runtime_config.get("api_key") or os.environ.get("DATA_AGENT_DEEPSEEK_API_KEY") or os.environ.get("DEEPSEEK_API_KEY")
+        self.config_source = runtime_config.get("source") or ("explicit" if api_key else "environment")
         self.timeout_seconds = float(timeout_seconds or os.environ.get("DATA_AGENT_DEEPSEEK_TIMEOUT_SECONDS", "45") or 45)
         self._opener = opener or urlopen
 
@@ -116,7 +127,8 @@ class DeepSeekAdapter(object):
 
     def health(self):
         return {"contract": self.contract, "provider": "deepseek", "model": self.model,
-                "ready": bool(self.api_key), "reason": None if self.api_key else "missing_api_key"}
+                "ready": bool(self.api_key), "reason": None if self.api_key else "missing_api_key",
+                "config_source": self.config_source}
 
     def explain_safe_analysis(self, question, release_chain):
         overview = (release_chain or {}).get("report_sections") or {}
