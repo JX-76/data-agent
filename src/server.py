@@ -35,6 +35,10 @@ from fastapi import FastAPI, HTTPException, Request, Depends, Query as QueryPara
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+try:
+    from fastapi.encoders import jsonable_encoder
+except Exception:  # pragma: no cover - FastAPI is optional for some script-only imports
+    jsonable_encoder = None
 from pydantic import BaseModel, Field
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -64,40 +68,214 @@ _setup_logging(cfg)
 logger = structlog.get_logger("data-agent")
 
 
-# ── Lightweight in-memory stream task store ──
+def _json_safe_payload(payload):
+    """Return a JSONResponse-safe projection for legacy HTTP boundaries.
+
+    Release envelopes may contain datetime/date/UUID objects in raw diagnostics,
+    provenance or nested adapter metadata.  Direct JSONResponse serialization can
+    therefore fail after the business path has already succeeded, which previously
+    caused `/query` to surface as HTTP 500.  Keep the contract unchanged while
+    normalizing non-JSON primitives at the server boundary.
+    """
+    if jsonable_encoder is not None:
+        return jsonable_encoder(payload)
+    return json.loads(json.dumps(payload, default=str, ensure_ascii=False))
+
+
+# ── Stream task status store ──
+# DurableTaskControlPlane owns lifecycle state; the in-memory sidecar only keeps
+# transient SSE event/result payloads for the current process.  A production
+# adapter should persist payload refs/object-store refs rather than raw events.
+try:
+    from durable_task_control_plane import (DurableTaskControlPlane, TaskConflictError,
+                                            SQLiteTaskRepository)
+    from durable_task_worker import DurableTaskWorker
+except Exception:  # pragma: no cover - server imports should remain resilient
+    DurableTaskControlPlane = None
+    TaskConflictError = Exception
+    SQLiteTaskRepository = None
+    DurableTaskWorker = None
+
+
+def _build_stream_task_control():
+    if DurableTaskControlPlane is None:
+        return None
+    db_path = os.environ.get('DATA_AGENT_STREAM_TASK_DB_PATH')
+    if db_path and SQLiteTaskRepository is not None:
+        return DurableTaskControlPlane(SQLiteTaskRepository(db_path))
+    return DurableTaskControlPlane()
+
+
+_STREAM_TASK_CONTROL = _build_stream_task_control()
+_STREAM_TASK_WORKER = None
 _STREAM_TASKS = {}
 
 
-def _stream_task_snapshot(task_id):
-    item = _STREAM_TASKS.get(task_id) or {}
-    return dict(item)
+def _build_stream_task_worker(control_plane):
+    if DurableTaskWorker is None or control_plane is None:
+        return None
+    worker = DurableTaskWorker(control_plane=control_plane, poll_interval_seconds=0.01)
+    worker.start()
+    return worker
 
 
-async def _run_stream_release_task(task_id, req, headers, trace_id, started_ms):
+_STREAM_TASK_WORKER = _build_stream_task_worker(_STREAM_TASK_CONTROL)
+
+
+def _append_stream_event(task_id, event):
+    """Append a process-local, monotonically identified stream observation.
+
+    Event IDs support reconnect replay within the lifetime of this server process.
+    They are deliberately not described as durable until an event-log repository
+    replaces this sidecar.
+    """
     task = _STREAM_TASKS.setdefault(task_id, {})
-    task.update({'task_id': task_id, 'trace_id': trace_id, 'status': 'running', 'events': list(task.get('events') or [])})
-    task['events'].append({'type': 'progress', 'task_id': task_id, 'trace_id': trace_id, 'step': 'release_api'})
+    event = dict(event or {})
+    sequence = int(task.get('next_event_id') or 1)
+    event['event_id'] = str(sequence)
+    task['next_event_id'] = sequence + 1
+    task.setdefault('events', []).append(event)
+    return event
+
+
+def _parse_last_event_id(headers):
+    raw = (headers or {}).get('last-event-id') or (headers or {}).get('Last-Event-ID')
+    try:
+        return max(0, int(raw)) if raw is not None else 0
+    except (TypeError, ValueError):
+        return 0
+
+
+def _sse_frame(event):
+    """Render a versioned SSE observation without trusting arbitrary fields."""
+    safe = _json_safe_payload(event)
+    event_id = safe.get('event_id')
+    prefix = ('id: %s\n' % event_id) if event_id is not None else ''
+    event_type = safe.get('type') or 'message'
+    return '%sevent: %s\ndata: %s\n\n' % (
+        prefix, event_type, json.dumps(safe, ensure_ascii=False))
+
+
+def _close_stream_task_control():
+    """Release local worker and SQLite resources before rebuilding the adapter."""
+    global _STREAM_TASK_WORKER
+    if _STREAM_TASK_WORKER is not None:
+        try:
+            _STREAM_TASK_WORKER.stop()
+        except Exception:
+            pass
+        _STREAM_TASK_WORKER = None
+    control = _STREAM_TASK_CONTROL
+    repository = getattr(control, 'repository', None)
+    for candidate in (repository, getattr(repository, '_conn', None)):
+        close = getattr(candidate, 'close', None)
+        if callable(close):
+            try:
+                close()
+            except Exception:
+                pass
+
+
+def _reset_stream_task_control_for_tests(db_path=None):
+    """Test/adapter hook: rebuild stream lifecycle storage without raw sidecars."""
+    global _STREAM_TASK_CONTROL, _STREAM_TASK_WORKER
+    _close_stream_task_control()
+    if db_path is None:
+        _STREAM_TASK_CONTROL = _build_stream_task_control()
+    elif db_path:
+        _STREAM_TASK_CONTROL = DurableTaskControlPlane(SQLiteTaskRepository(db_path))
+    else:
+        _STREAM_TASK_CONTROL = DurableTaskControlPlane()
+    _STREAM_TASK_WORKER = _build_stream_task_worker(_STREAM_TASK_CONTROL)
+    return _STREAM_TASK_CONTROL
+
+
+def _stream_task_snapshot(task_id):
+    sidecar = dict(_STREAM_TASKS.get(task_id) or {})
+    if _STREAM_TASK_CONTROL is not None:
+        durable = _STREAM_TASK_CONTROL.status_snapshot(task_id)
+        if durable is not None:
+            durable['stream_contract'] = 'stream_task_v2'
+            durable['legacy_stream_sidecar'] = sidecar
+            if sidecar.get('result') is not None:
+                durable['result'] = sidecar.get('result')
+            if sidecar.get('events') is not None:
+                durable['events'] = list(sidecar.get('events') or [])
+            durable['status'] = durable.get('state')
+            return durable
+    return sidecar
+
+
+def _task_requester_scope(access_context):
+    """Create a minimal non-secret durable ownership projection."""
+    access_context = dict(access_context or {})
+    return {
+        'tenant_id': access_context.get('tenant_id') or 'default',
+        'user_id': access_context.get('user_id') or 'anonymous',
+        'role': access_context.get('role') or 'anonymous',
+    }
+
+
+def _task_scope_allows(snapshot, access_context):
+    """Fail closed for a task lacking durable requester scope.
+
+    Existing pre-Phase-F records have no verifiable owner and must not become
+    readable merely because status/replay endpoints gained authorization.
+    """
+    owner = dict((snapshot or {}).get('requester_scope') or {})
+    access_context = dict(access_context or {})
+    if not owner or not owner.get('tenant_id') or not owner.get('user_id'):
+        return False
+    if owner.get('tenant_id') != (access_context.get('tenant_id') or 'default'):
+        return False
+    if _is_admin_context(access_context):
+        return True
+    return owner.get('user_id') == (access_context.get('user_id') or 'anonymous')
+
+
+def _task_access_denied(task_id):
+    # Deliberately indistinguishable from not-found to avoid task enumeration.
+    return JSONResponse({'contract': 'stream_task_v2', 'status': 'error',
+                         'error': {'code': 'task_not_found'}, 'task_id': task_id},
+                        status_code=404)
+
+
+def _stream_release_executor(task_id, req, headers, trace_id, started_ms):
+    """Local worker executor; the HTTP/SSE connection is only an observer."""
+    task = _STREAM_TASKS.setdefault(task_id, {})
+    task.update({'task_id': task_id, 'trace_id': trace_id, 'status': 'running',
+                 'events': list(task.get('events') or [])})
+    _append_stream_event(task_id, {'type': 'progress', 'task_id': task_id,
+                                   'trace_id': trace_id, 'step': 'release_api'})
     try:
         from release_api import ask_release
-        loop = asyncio.get_event_loop()
-        response = await loop.run_in_executor(
-            None, lambda: ask_release(req.query, session_id=req.session_id, use_llm=req.use_llm, headers=headers))
+        response = ask_release(req.query, session_id=req.session_id,
+                               use_llm=req.use_llm, headers=headers)
         response['type'] = 'complete'
         response['task_id'] = task_id
         response['trace_id'] = response.get('trace_id') or trace_id
         response['legacy_endpoint'] = '/query/stream'
-        task.update({'status': response.get('status') or 'ok', 'result': response, 'completed_at': time.time()})
-        task['events'].append(response)
-    except Exception as e:
+        task.update({'status': response.get('status') or 'ok', 'result': response,
+                     'completed_at': time.time()})
+        _append_stream_event(task_id, response)
+        return {'status': 'ok',
+                'receipt': {'contract': 'stream_release_receipt_v1',
+                            'trace_id': response.get('trace_id')},
+                'output_ref': {'sidecar': 'memory', 'task_id': task_id}}
+    except Exception as exc:
         from release_api import _runtime_error_result, _envelope, _new_id
-        result = _runtime_error_result('server_stream', 'server_stream_exception', str(e), True, trace_id)
-        error = _envelope(req.query, req.session_id, result, started_ms, _new_id('audit'))
+        result = _runtime_error_result('server_stream', 'server_stream_exception',
+                                       str(exc), True, trace_id)
+        error = _envelope(req.query, req.session_id, result, started_ms,
+                          _new_id('audit'))
         error['type'] = 'error'
         error['task_id'] = task_id
         error['legacy_endpoint'] = '/query/stream'
         task.update({'status': 'error', 'result': error, 'completed_at': time.time()})
-        task['events'].append(error)
-    return task.get('result')
+        _append_stream_event(task_id, error)
+        return {'status': 'error', 'error_code': 'server_stream_exception',
+                'error_class': 'runtime', 'safe_error_summary': str(exc),
+                'output_ref': {'sidecar': 'memory', 'task_id': task_id}}
 
 
 # ── Request/Response Models ──
@@ -676,7 +854,7 @@ async def query(
                     trace_id=(env.get("raw") or {}).get("trace_id") or env.get("audit_id"),
                     status=env.get("status"),
                     duration_ms=int(env.get("duration_ms") or 0))
-        return JSONResponse(env)
+        return JSONResponse(_json_safe_payload(env))
     except Exception as e:
         from release_api import _runtime_error_result, _envelope, _new_id
         started_ms = int(t0 * 1000)
@@ -685,7 +863,7 @@ async def query(
         env = _envelope(req.query, req.session_id, result, started_ms, _new_id("audit"))
         env["legacy_endpoint"] = "/query"
         logger.error("query_error", trace_id=trace_id, error=str(e), duration_ms=int((time.time() - t0) * 1000))
-        return JSONResponse(env, status_code=200)
+        return JSONResponse(_json_safe_payload(env), status_code=200)
 
 
 @app.post("/query/stream")
@@ -699,40 +877,142 @@ async def query_stream(
     task_id = "stream_" + uuid.uuid4().hex
     started_ms = int(time.time() * 1000)
     headers = dict(request.headers)
-    _STREAM_TASKS[task_id] = {'task_id': task_id, 'trace_id': trace_id, 'status': 'queued', 'events': []}
+    access_context = _server_access_context(request)
+    requester_scope = _task_requester_scope(access_context)
+    _STREAM_TASKS[task_id] = {'task_id': task_id, 'trace_id': trace_id,
+                              'status': 'queued', 'events': [], 'next_event_id': 1}
+    task_data = {
+        'task_id': task_id,
+        'case_id': req.session_id or task_id,
+        'task_type': 'release_query_stream',
+        'worker_type': 'server_stream_worker',
+        'input_ref': {'query_hash': hashlib.sha256(req.query.encode('utf-8')).hexdigest()[:16], 'use_llm': bool(req.use_llm)},
+        'idempotency_key': task_id,
+        'trace_id': trace_id,
+        'session_id': req.session_id,
+        'max_attempts': 1,
+        'risk_level': 'low',
+        'requester_scope': requester_scope,
+    }
+    if _STREAM_TASK_WORKER is not None:
+        _STREAM_TASK_WORKER.submit(
+            task_data,
+            lambda record: _stream_release_executor(task_id, req, headers, trace_id, started_ms))
+    elif _STREAM_TASK_CONTROL is not None:
+        # Dependency-light fallback only; normal server startup builds the local
+        # worker.  Never execute synchronously in the HTTP handler.
+        _STREAM_TASK_CONTROL.submit(task_data)
+
+    # The local worker can claim immediately.  Bind owner scope after submit as
+    # a defensive reconciliation for adapters that normalize TaskRecord input.
+    if _STREAM_TASK_CONTROL is not None:
+        try:
+            _STREAM_TASK_CONTROL.annotate(
+                task_id, {'requester_scope': requester_scope},
+                event='requester_scope_bound')
+        except TaskConflictError:
+            pass
+
+    last_event_id = _parse_last_event_id(headers)
 
     async def event_stream():
-        # Start work when the stream is actually consumed, not when the
-        # StreamingResponse is constructed.  This keeps the task on the
-        # consumer's event loop for direct adapters/tests as well as ASGI, and
-        # avoids a cancelled queued task leaving this loop unbounded.
-        background = asyncio.create_task(
-            _run_stream_release_task(task_id, req, headers, trace_id, started_ms))
-        yield f"data: {json.dumps({'type': 'start', 'task_id': task_id, 'trace_id': trace_id})}\n\n"
-        sent = 0
+        # Start is a connection-level observation. Task events begin at 1 and
+        # are replayed only when their id is greater than Last-Event-ID.
+        if not last_event_id:
+            yield _sse_frame({'type': 'start', 'event_id': '0', 'task_id': task_id,
+                              'trace_id': trace_id, 'replay': False})
+        sent_through = last_event_id
         while True:
             task = _STREAM_TASKS.get(task_id) or {}
             events = list(task.get('events') or [])
-            for event in events[sent:]:
-                sent += 1
-                yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
-            if task.get('status') not in ('queued', 'running'):
+            for event in events:
+                try:
+                    event_number = int(event.get('event_id') or 0)
+                except (TypeError, ValueError):
+                    event_number = 0
+                if event_number <= sent_through:
+                    continue
+                sent_through = event_number
+                replay = last_event_id and event_number > last_event_id
+                projected = dict(event)
+                projected['replay'] = bool(replay)
+                yield _sse_frame(projected)
+            snapshot = _stream_task_snapshot(task_id) or {}
+            state = snapshot.get('state') or task.get('status')
+            if state not in ('queued', 'running', 'retry_wait'):
                 break
             await asyncio.sleep(0.01)
         yield "data: [DONE]\n\n"
-        await background
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
+@app.get("/tasks/{task_id}/stream")
+async def resume_task_stream(
+    task_id: str,
+    request: Request,
+    _auth: None = Depends(verify_api_key),
+):
+    """Replay current-process SSE observations after Last-Event-ID.
+
+    Task execution remains independent of this observer.  If a durable TaskRecord
+    survives but its in-memory event sidecar does not, clients must poll status;
+    this endpoint does not pretend that a durable event log exists.
+    """
+    snapshot = _stream_task_snapshot(task_id)
+    access_context = _server_access_context(request)
+    if not snapshot or not _task_scope_allows(snapshot, access_context):
+        return _task_access_denied(task_id)
+    headers = dict(request.headers)
+    last_event_id = _parse_last_event_id(headers)
+    trace_id = snapshot.get('trace_id')
+
+    async def replay_stream():
+        task = _STREAM_TASKS.get(task_id)
+        if task is None:
+            yield _sse_frame({'type': 'replay_unavailable', 'event_id': str(last_event_id),
+                              'task_id': task_id, 'trace_id': trace_id,
+                              'reason': 'process_local_event_sidecar_missing',
+                              'status_url': '/tasks/%s' % task_id})
+            yield "data: [DONE]\n\n"
+            return
+        sent_through = last_event_id
+        while True:
+            events = list(task.get('events') or [])
+            for event in events:
+                try:
+                    event_number = int(event.get('event_id') or 0)
+                except (TypeError, ValueError):
+                    event_number = 0
+                if event_number <= sent_through:
+                    continue
+                sent_through = event_number
+                projected = dict(event)
+                projected['replay'] = True
+                yield _sse_frame(projected)
+            current = _stream_task_snapshot(task_id) or {}
+            state = current.get('state') or task.get('status')
+            if state not in ('queued', 'running', 'retry_wait'):
+                break
+            await asyncio.sleep(0.01)
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(replay_stream(), media_type="text/event-stream")
+
+
 @app.get("/tasks/{task_id}")
-async def task_status(task_id: str, _auth: None = Depends(verify_api_key)):
-    """Return metadata/result for a stream task after client reconnect/disconnect."""
+async def task_status(
+    task_id: str,
+    request: Request,
+    _auth: None = Depends(verify_api_key),
+):
+    """Return task status only to its owner or a same-tenant administrator."""
     item = _stream_task_snapshot(task_id)
-    if not item:
-        return JSONResponse({'contract': 'stream_task_v1', 'status': 'error', 'error': {'code': 'task_not_found'}, 'task_id': task_id}, status_code=404)
-    item['contract'] = 'stream_task_v1'
-    return JSONResponse(item)
+    access_context = _server_access_context(request)
+    if not item or not _task_scope_allows(item, access_context):
+        return _task_access_denied(task_id)
+    item['contract'] = item.get('stream_contract') or 'stream_task_v1'
+    return JSONResponse(_json_safe_payload(item))
 
 
 @app.post("/sessions")

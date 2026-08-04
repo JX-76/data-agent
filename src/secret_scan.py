@@ -12,7 +12,9 @@ SECRET_PATTERNS = [
     ("private_key", re.compile(r"-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----")),
 ]
 
-DEFAULT_EXCLUDES = set([".git", "__pycache__", ".pytest_cache", "node_modules", ".venv", "venv", "sessions", "downloads", "flywheel_data"])
+# Test fixtures contain deliberately fake credential-shaped values used to
+# validate masking.  Release scanning focuses on shippable source/config/docs.
+DEFAULT_EXCLUDES = set([".git", "__pycache__", ".pytest_cache", "node_modules", ".venv", "venv", "sessions", "downloads", "flywheel_data", "tests"])
 TEXT_EXTS = set([".py", ".yml", ".yaml", ".json", ".env", ".md", ".txt", ".toml", ".sql"])
 TEMPLATE_SUFFIXES = (".example", ".sample", ".template", ".tmpl", ".dist")
 
@@ -26,8 +28,11 @@ def scan_path(root, excludes=None):
         for filename in files:
             path = os.path.join(base, filename)
             low_name = filename.lower()
-            # Skip template/example files: they're expected to hold placeholders.
-            if any(low_name.endswith(suffix) for suffix in TEMPLATE_SUFFIXES) or low_name in ("tenants.example.json",):
+            # Local .env is explicitly gitignored and must never be treated as
+            # release content.  Templates/examples are expected to hold
+            # placeholders and are likewise not release secrets.
+            if (low_name == ".env" or any(low_name.endswith(suffix) for suffix in TEMPLATE_SUFFIXES)
+                    or low_name in ("tenants.example.json",)):
                 continue
             ext = os.path.splitext(filename)[1].lower()
             if ext not in TEXT_EXTS and low_name != ".env":

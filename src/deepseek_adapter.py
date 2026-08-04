@@ -91,6 +91,7 @@ class DeepSeekAdapter(object):
         self.config_source = runtime_config.get("source") or ("explicit" if api_key else "environment")
         self.timeout_seconds = float(timeout_seconds or os.environ.get("DATA_AGENT_DEEPSEEK_TIMEOUT_SECONDS", "45") or 45)
         self._opener = opener or urlopen
+        self.provider_trace = None
 
     def _request_json(self, path, payload=None, timeout_seconds=None):
         if not self.api_key:
@@ -101,12 +102,41 @@ class DeepSeekAdapter(object):
             body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
             headers["Content-Type"] = "application/json"
         request = Request(self.base_url + path, data=body, headers=headers)
-        try:
+        def _send():
             response = self._opener(request, timeout=timeout_seconds or self.timeout_seconds)
             raw = response.read()
             if not isinstance(raw, str):
                 raw = raw.decode("utf-8")
             return json.loads(raw)
+        try:
+            if os.environ.get("DATA_AGENT_DEEPSEEK_RESILIENCE", "1") == "0":
+                return _send()
+            from provider_resilience import ProviderResilience
+            resilience = ProviderResilience(
+                "deepseek",
+                max_attempts=int(os.environ.get("DATA_AGENT_DEEPSEEK_MAX_ATTEMPTS", "3") or 3),
+                base_delay_seconds=float(os.environ.get("DATA_AGENT_DEEPSEEK_RETRY_BASE_SECONDS", "0.25") or 0.25),
+                max_delay_seconds=float(os.environ.get("DATA_AGENT_DEEPSEEK_RETRY_MAX_SECONDS", "2.0") or 2.0),
+                jitter_seconds=float(os.environ.get("DATA_AGENT_DEEPSEEK_RETRY_JITTER_SECONDS", "0.1") or 0.1),
+                failure_threshold=int(os.environ.get("DATA_AGENT_DEEPSEEK_CIRCUIT_FAILURE_THRESHOLD", "3") or 3),
+                recovery_timeout_seconds=float(os.environ.get("DATA_AGENT_DEEPSEEK_CIRCUIT_RECOVERY_SECONDS", "15") or 15))
+            def _error_code(exc):
+                if isinstance(exc, HTTPError):
+                    if exc.code in (401, 403):
+                        return "auth_failed"
+                    if exc.code == 429:
+                        return "rate_limited"
+                    if exc.code >= 500:
+                        return "provider_runtime_error"
+                if isinstance(exc, URLError):
+                    return "unavailable"
+                return getattr(exc, "code", None)
+            try:
+                result = resilience.call(_send, error_code_getter=_error_code)
+            finally:
+                # This trace has no request, response, URL, or credential values.
+                self.provider_trace = resilience.last_observation
+            return result
         except HTTPError as exc:
             code = "http_%s" % exc.code
             if exc.code in (401, 403):
@@ -121,6 +151,8 @@ class DeepSeekAdapter(object):
         except ValueError:
             raise DeepSeekError("invalid_response", "DeepSeek API 返回了无效响应。")
         except Exception as exc:
+            if hasattr(exc, "code") and getattr(exc, "code") == "circuit_open":
+                raise DeepSeekError("circuit_open", "DeepSeek API 熔断保护已打开，请稍后重试。")
             message = str(exc).lower()
             if "timed out" in message or "timeout" in message:
                 raise DeepSeekError("timeout", "DeepSeek API 响应超时。")
@@ -153,6 +185,7 @@ class DeepSeekAdapter(object):
             "max_tokens": 120,
             "stream": False,
         })
+        provider_trace = self.provider_trace
         choices = data.get("choices") or []
         message = (choices[0].get("message") if choices and isinstance(choices[0], dict) else {}) or {}
         text = (message.get("content") or "").strip()
@@ -164,6 +197,7 @@ class DeepSeekAdapter(object):
         system_prompt = build_presentation_assist_prompt("DeepSeek")
         return {"contract": "deepseek_presentation_assist_v1", "provider": "deepseek", "model": self.model,
                 "status": "ok", "text": text[:700], "latency_ms": int((time.time() - started) * 1000),
+                "provider_trace": provider_trace,
                 "prompt_metadata": prompt_metadata("presentation_assist", system_prompt),
                 "limitations": ["该说明只用于阅读引导，不是事实、证据、SQL 或执行结果。"]}
 

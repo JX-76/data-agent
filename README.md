@@ -202,7 +202,7 @@ print(result["diagnosis"]["overall_severity"])  # 诊断
 DATA_AGENT_HOST=127.0.0.1
 DATA_AGENT_PORT=8000
 # DATA_AGENT_AUTH=false
-# DATA_AGENT_API_KEY=replace-with-your-own-local-api-key
+# DATA_AGENT_API_KEY=${DATA_AGENT_API_KEY}
 DEEPSEEK_API_KEY=                    # 可留空，改用页面“模型/API 设置”填写
 DEEPSEEK_BASE_URL=https://api.deepseek.com
 DEEPSEEK_MODEL=deepseek-chat

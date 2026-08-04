@@ -1,0 +1,57 @@
+{
+  "contract": "ecommerce_eval_dataset_manifest_v1",
+  "coverage_gaps": [
+    "Tool routing labels are synthetic expected manifests, not measured model tool-selection behavior until a dedicated evaluator is run.",
+    "SQL records carry semantic gold but not independently hand-verified fixed result sets/gold SQL.",
+    "Labels are synthetic candidates and require human adjudication before accuracy claims.",
+    "No real tenant data, production model/provider or external data-source SLA is represented."
+  ],
+  "datasets": {
+    "ecommerce_e2e_v1.jsonl": {
+      "path": "harness/datasets/ecommerce_e2e_v1.jsonl",
+      "record_count": 250,
+      "sha256": "ea08b2fad81dc4d867defda19340adfe51abf8f775aebd7ebc8a3d224dd12e06"
+    },
+    "ecommerce_evidence_v1.jsonl": {
+      "path": "harness/datasets/ecommerce_evidence_v1.jsonl",
+      "record_count": 80,
+      "sha256": "b78a42a069890fcdef11cb53d270c7847d2a1990b86dde1c84b524f91caee1fb"
+    },
+    "ecommerce_multiturn_v1.jsonl": {
+      "path": "harness/datasets/ecommerce_multiturn_v1.jsonl",
+      "record_count": 60,
+      "sha256": "59100b21a1a2e42b1e09ab9302eaf2f9cfc40ecf8ba14a6f7a14f28ecc9006b5"
+    },
+    "ecommerce_rag_gold_v1.jsonl": {
+      "path": "harness/datasets/ecommerce_rag_gold_v1.jsonl",
+      "record_count": 100,
+      "sha256": "7dc1caee908f60109e1846b7cede9c051ec857d0cc67f8123f8a62efb3fdb2b2"
+    },
+    "ecommerce_resilience_v1.jsonl": {
+      "path": "harness/datasets/ecommerce_resilience_v1.jsonl",
+      "record_count": 112,
+      "sha256": "e299abf148fccf6e3373fb238b75ad418b92c0e3bd6b6792ccfab93708d3f69e"
+    },
+    "ecommerce_safety_v1.jsonl": {
+      "path": "harness/datasets/ecommerce_safety_v1.jsonl",
+      "record_count": 120,
+      "sha256": "591252102683d1c2f672eaa63d175324b21818b8cdc720826b4d28f7bd4793c9"
+    },
+    "ecommerce_sql_gold_v1.jsonl": {
+      "path": "harness/datasets/ecommerce_sql_gold_v1.jsonl",
+      "record_count": 100,
+      "sha256": "7d6b604340ef7c68bb496dfb366a267eb141ded201a57a06af19762e9bf2eb0d"
+    },
+    "ecommerce_tool_routing_v1.jsonl": {
+      "path": "harness/datasets/ecommerce_tool_routing_v1.jsonl",
+      "record_count": 120,
+      "sha256": "acfc424f083bb504e8466e2fe172bc20ccbe885414a603fa0b5ea02044127c39"
+    }
+  },
+  "generated_at": "2026-08-04T04:40:18+0800",
+  "label_policy": {
+    "label_source": "synthetic_structured_candidate_derived_from_fixed_local_schema_and_existing_harness",
+    "not_for_production_claim": true,
+    "review_status": "pending_human_adjudication"
+  }
+}

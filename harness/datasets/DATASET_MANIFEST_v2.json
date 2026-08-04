@@ -1,0 +1,57 @@
+{
+  "contract": "ecommerce_eval_dataset_manifest_v2",
+  "coverage_gaps": [
+    "Most labels remain synthetic candidates pending human adjudication.",
+    "SQL fixture result checksums are marked pending where compiler-specific execution has not written final numeric gold.",
+    "No external production traffic, provider token/cost telemetry or real vector database is represented."
+  ],
+  "datasets": {
+    "ecommerce_e2e_v2.jsonl": {
+      "path": "harness/datasets/ecommerce_e2e_v2.jsonl",
+      "record_count": 500,
+      "sha256": "3311f287527f583c49639b2361cff823f9804c6f7dca1188a0a2564998993c0e"
+    },
+    "ecommerce_evidence_v2.jsonl": {
+      "path": "harness/datasets/ecommerce_evidence_v2.jsonl",
+      "record_count": 200,
+      "sha256": "5256dbeeabfe96924df041efa4e7fb67c8c05764b4ddba79241892b718f64fa9"
+    },
+    "ecommerce_multiturn_v2.jsonl": {
+      "path": "harness/datasets/ecommerce_multiturn_v2.jsonl",
+      "record_count": 150,
+      "sha256": "15ae60f37b9adf31baf207386e80da4e28ad2a803bcb7142be8b90a2ebd88991"
+    },
+    "ecommerce_rag_gold_v2.jsonl": {
+      "path": "harness/datasets/ecommerce_rag_gold_v2.jsonl",
+      "record_count": 300,
+      "sha256": "6245937d42808b2625ba33c32d2d680cc8ffc1a5b63e80b09ad37908817927b3"
+    },
+    "ecommerce_resilience_v2.jsonl": {
+      "path": "harness/datasets/ecommerce_resilience_v2.jsonl",
+      "record_count": 200,
+      "sha256": "5b917467c3c00015b4700d87606f9262a856c7ace6dbcdded726eae4d28cd5d9"
+    },
+    "ecommerce_safety_v2.jsonl": {
+      "path": "harness/datasets/ecommerce_safety_v2.jsonl",
+      "record_count": 300,
+      "sha256": "2239b38a0acc4d83623443449166344c6d7cb9bb31b63bec619d409ee3d950ef"
+    },
+    "ecommerce_sql_gold_v2.jsonl": {
+      "path": "harness/datasets/ecommerce_sql_gold_v2.jsonl",
+      "record_count": 200,
+      "sha256": "4370e090558b952cc4afdcce35b862d3fc68165dece6f7fe0a13f238a1f10611"
+    },
+    "ecommerce_tool_routing_v2.jsonl": {
+      "path": "harness/datasets/ecommerce_tool_routing_v2.jsonl",
+      "record_count": 200,
+      "sha256": "0ce4d7d24916364c4ac57d479b55d7f7de395bbd3c5e018792c44446edf507f9"
+    }
+  },
+  "generated_at": "2026-08-05T03:45:07+0800",
+  "label_policy": {
+    "label_source": "optimized_synthetic_structured_candidate_with_fixture_verified_subset",
+    "not_for_production_claim": true,
+    "review_status": "pending_human_adjudication",
+    "version_intent": "larger_stratified_reviewable_dataset_not_accuracy_inflation"
+  }
+}

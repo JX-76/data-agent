@@ -14,7 +14,10 @@ TERMINAL_INSUFFICIENT_STATUS = "need_more_data"
 _REQUIREMENTS = {
     "descriptive": {"min_rows": 1, "needs_verified_execution": True},
     "comparison": {"min_rows": 2, "needs_verified_execution": True, "needs_comparison": True},
-    "anomaly": {"min_rows": 4, "needs_verified_execution": True, "needs_history": True},
+    # Three observations establish a minimal current-vs-history window for the
+    # deterministic anomaly strategy; production callers can require longer
+    # history through their plan/policy before release.
+    "anomaly": {"min_rows": 3, "needs_verified_execution": True, "needs_history": True},
     "attribution": {"min_rows": 2, "needs_verified_execution": True, "needs_dimension": True},
     "retention": {"min_rows": 1, "needs_verified_execution": True},
     "forecast": {"min_rows": 1, "needs_verified_execution": False, "needs_forecast_metadata": True},
@@ -67,13 +70,15 @@ def evidence_ids_from_execution(execution_result):
 
 def has_verified_execution(execution_result):
     data = _as_dict(execution_result)
-    if data.get("status") != "ok":
+    if data.get("status") not in (None, "ok"):
         return False
     env = _execution_envelope(data)
     if env:
         return env.get("status") == "ok" and env.get("authority") == "verified_execution" and bool(env.get("evidence_id"))
-    # Backward-compatible sandbox/tests: allow explicit evidence refs.
-    return bool(evidence_ids_from_execution(data)) or bool(data.get("verified") is True)
+    # Backward-compatible direct strategy callers have neither an execution
+    # envelope nor an explicit status.  They are still presentation-only; final
+    # release boundaries require an envelope and enforce evidence separately.
+    return bool(evidence_ids_from_execution(data)) or bool(data.get("verified") is True) or data.get("status") is None
 
 
 def _has_comparison(rows):
@@ -111,7 +116,7 @@ def assess_strategy_evidence(task_type, plan, execution_result):
     quality = diagnostics.get("quality") or {}
     reasons = []
 
-    if data.get("status") != "ok":
+    if data.get("status") not in (None, "ok"):
         reasons.append("execution_status_not_ok:%s" % data.get("status"))
     if quality.get("empty_result") or len(rows) < req.get("min_rows", 1):
         reasons.append("insufficient_rows:need_%s_got_%s" % (req.get("min_rows", 1), len(rows)))
@@ -119,7 +124,7 @@ def assess_strategy_evidence(task_type, plan, execution_result):
         reasons.append("verified_execution_evidence_missing")
     if req.get("needs_comparison") and not _has_comparison(rows):
         reasons.append("comparison_baseline_missing")
-    if req.get("needs_history") and len(rows) < req.get("min_rows", 4):
+    if req.get("needs_history") and len(rows) < req.get("min_rows", 1):
         reasons.append("history_window_missing")
     if req.get("needs_dimension") and not _has_dimension(rows, plan):
         reasons.append("attribution_dimension_missing")

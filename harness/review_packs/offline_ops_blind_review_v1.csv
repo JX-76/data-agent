@@ -1,0 +1,4 @@
+contract,case_id,query,answer,rubric_version,attribution_coverage_1_5,logic_chain_1_5,actionability_1_5,adoption_intent_1_5,reviewer_id,reviewer_role,notes
+offline_blind_review_v1,review_seed_001,最近7天GMV下降的主因是什么？,请基于渠道、品类和转化率证据分析主因。,offline_ops_rubric_v1,,,,,,,
+offline_blind_review_v1,review_seed_002,ROI变差后应该优先做什么？,先核验投放成本、转化和归因范围，再给出草案建议。,offline_ops_rubric_v1,,,,,,,
+offline_blind_review_v1,review_seed_003,本月华东GMV表现如何？,请按明确口径和当前权限范围解释结果。,offline_ops_rubric_v1,,,,,,,

@@ -49,9 +49,20 @@ class PrefixCacheManager(object):
         return self._cached_prefix_tokens
 
     def _build_prefix(self):
-        # The complete role contract is assembled in build_system_prompt where
-        # the actual server-provided tool list, semantic layer, and state exist.
-        return ''
+        """Build the legacy stable prefix without request-specific state.
+
+        ``cacheable_prefix`` remains a public compatibility surface.  It must
+        expose the durable rules/tool/semantic contract even before a caller
+        supplies the request-specific data IDs to ``build_system_prompt``.
+        """
+        parts = [
+            '## Rules\n\nFollow server policy, permission scope, and evidence requirements.',
+        ]
+        if self._tools_desc:
+            parts.append('## Tools\n\n%s' % self._tools_desc)
+        if self._semantic_layer:
+            parts.append(self._semantic_layer)
+        return '\n\n'.join(parts)
 
     def build_system_prompt(self, tools_desc, semantic_summary, current_dataids):
         from config import SEMANTIC_SUMMARY as semantic_summary_config

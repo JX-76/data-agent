@@ -12,6 +12,7 @@ import hashlib
 import json
 import random
 import sqlite3
+import threading
 import time
 import uuid
 
@@ -80,7 +81,7 @@ class TaskRecord(object):
                  error_class=None, safe_error_summary=None, dependencies=None,
                  blocked_by=None, risk_level='low', budget=None, cost_ledger=None,
                  schema_version=1, created_at=None, updated_at=None, version=0,
-                 reconciliation_required=False, audit=None):
+                 reconciliation_required=False, requester_scope=None, audit=None):
         now = _now(created_at)
         self.task_id = task_id or _new_id('task')
         self.case_id = case_id
@@ -117,6 +118,9 @@ class TaskRecord(object):
         self.updated_at = _now(updated_at if updated_at is not None else now)
         self.version = int(version or 0)
         self.reconciliation_required = bool(reconciliation_required)
+        # Durable, non-secret task ownership projection.  It is used by HTTP
+        # observer adapters; it must never contain credentials or raw headers.
+        self.requester_scope = dict(requester_scope or {})
         self.audit = list(audit or [])
 
     @classmethod
@@ -140,7 +144,8 @@ class TaskRecord(object):
             'blocked_by': list(self.blocked_by), 'risk_level': self.risk_level, 'budget': dict(self.budget),
             'cost_ledger': dict(self.cost_ledger), 'schema_version': self.schema_version,
             'created_at': self.created_at, 'updated_at': self.updated_at, 'version': self.version,
-            'reconciliation_required': self.reconciliation_required, 'audit': list(self.audit),
+            'reconciliation_required': self.reconciliation_required,
+            'requester_scope': dict(self.requester_scope), 'audit': list(self.audit),
         }
 
 
@@ -193,47 +198,58 @@ class InMemoryTaskRepository(TaskRepository):
 class SQLiteTaskRepository(TaskRepository):
     """SQLite metadata adapter. A production database adapter must implement TaskRepository."""
     def __init__(self, path=':memory:'):
-        self.conn = sqlite3.connect(path)
-        self.conn.execute('CREATE TABLE IF NOT EXISTS durable_tasks (task_id TEXT PRIMARY KEY, case_id TEXT, idem TEXT, version INTEGER, payload TEXT)')
-        self.conn.execute('CREATE UNIQUE INDEX IF NOT EXISTS durable_tasks_case_idem ON durable_tasks(case_id, idem)')
-        self.conn.commit()
+        # The local DurableTaskWorker runs on a background thread.  Keep SQLite
+        # ownership explicit and serialize adapter operations; production DB
+        # adapters must provide their own concurrency semantics.
+        self.conn = sqlite3.connect(path, check_same_thread=False)
+        self._lock = threading.RLock()
+        with self._lock:
+            self.conn.execute('CREATE TABLE IF NOT EXISTS durable_tasks (task_id TEXT PRIMARY KEY, case_id TEXT, idem TEXT, version INTEGER, payload TEXT)')
+            self.conn.execute('CREATE UNIQUE INDEX IF NOT EXISTS durable_tasks_case_idem ON durable_tasks(case_id, idem)')
+            self.conn.commit()
 
     def create(self, record):
         record = TaskRecord.from_dict(record.to_dict() if isinstance(record, TaskRecord) else record)
-        try:
-            self.conn.execute('INSERT INTO durable_tasks(task_id,case_id,idem,version,payload) VALUES(?,?,?,?,?)',
-                              (record.task_id, record.case_id, record.idempotency_key, record.version,
-                               json.dumps(record.to_dict(), sort_keys=True, ensure_ascii=True)))
-            self.conn.commit()
-        except sqlite3.IntegrityError:
-            raise TaskConflictError('duplicate_task_or_idempotency_key')
+        with self._lock:
+            try:
+                self.conn.execute('INSERT INTO durable_tasks(task_id,case_id,idem,version,payload) VALUES(?,?,?,?,?)',
+                                  (record.task_id, record.case_id, record.idempotency_key, record.version,
+                                   json.dumps(record.to_dict(), sort_keys=True, ensure_ascii=True)))
+                self.conn.commit()
+            except sqlite3.IntegrityError:
+                raise TaskConflictError('duplicate_task_or_idempotency_key')
         return record
 
     def get(self, task_id):
-        row = self.conn.execute('SELECT payload FROM durable_tasks WHERE task_id=?', (task_id,)).fetchone()
+        with self._lock:
+            row = self.conn.execute('SELECT payload FROM durable_tasks WHERE task_id=?', (task_id,)).fetchone()
         return TaskRecord.from_dict(json.loads(row[0])) if row else None
 
     def update(self, record, expected_version):
-        cursor = self.conn.execute('UPDATE durable_tasks SET version=?,payload=? WHERE task_id=? AND version=?',
-            (record.version, json.dumps(record.to_dict(), sort_keys=True, ensure_ascii=True), record.task_id, int(expected_version)))
-        self.conn.commit()
-        if cursor.rowcount != 1:
-            raise TaskConflictError('optimistic_lock_conflict')
+        with self._lock:
+            cursor = self.conn.execute('UPDATE durable_tasks SET version=?,payload=? WHERE task_id=? AND version=?',
+                (record.version, json.dumps(record.to_dict(), sort_keys=True, ensure_ascii=True), record.task_id, int(expected_version)))
+            self.conn.commit()
+            if cursor.rowcount != 1:
+                raise TaskConflictError('optimistic_lock_conflict')
         return self.get(record.task_id)
 
     def find_idempotency(self, case_id, idempotency_key):
-        row = self.conn.execute('SELECT payload FROM durable_tasks WHERE case_id IS ? AND idem=?', (case_id, idempotency_key)).fetchone()
+        with self._lock:
+            row = self.conn.execute('SELECT payload FROM durable_tasks WHERE case_id IS ? AND idem=?', (case_id, idempotency_key)).fetchone()
         return TaskRecord.from_dict(json.loads(row[0])) if row else None
 
     def list(self, case_id=None):
-        if case_id is None:
-            rows = self.conn.execute('SELECT payload FROM durable_tasks').fetchall()
-        else:
-            rows = self.conn.execute('SELECT payload FROM durable_tasks WHERE case_id IS ?', (case_id,)).fetchall()
+        with self._lock:
+            if case_id is None:
+                rows = self.conn.execute('SELECT payload FROM durable_tasks').fetchall()
+            else:
+                rows = self.conn.execute('SELECT payload FROM durable_tasks WHERE case_id IS ?', (case_id,)).fetchall()
         return [TaskRecord.from_dict(json.loads(row[0])) for row in rows]
 
     def close(self):
-        self.conn.close()
+        with self._lock:
+            self.conn.close()
 
 
 class DurableTaskControlPlane(object):
@@ -256,6 +272,24 @@ class DurableTaskControlPlane(object):
         record.version += 1
         record.updated_at = _now(now if now is not None else self.clock())
         record.audit.append({'event': event, 'from': from_state, 'to': record.state, 'at': record.updated_at})
+        return self.repository.update(record, record.version - 1)
+
+    def annotate(self, task_id, values, event='metadata_updated', now=None):
+        """Persist non-state task metadata with optimistic locking.
+
+        This does not bypass the lifecycle state machine: the state is unchanged
+        and the audit records exactly which adapter wrote the safe metadata.
+        """
+        record = self.repository.get(task_id)
+        if record is None:
+            raise TaskConflictError('task_not_found')
+        for key, value in dict(values or {}).items():
+            if not hasattr(record, key):
+                raise TaskStateError('unknown_task_metadata:%s' % key)
+            setattr(record, key, _copy(value))
+        record.version += 1
+        record.updated_at = _now(now if now is not None else self.clock())
+        record.audit.append({'event': event, 'at': record.updated_at})
         return self.repository.update(record, record.version - 1)
 
     def claim(self, task_id, worker_id='worker', now=None):

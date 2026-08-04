@@ -6,9 +6,10 @@ import os
 from db_adapter import MockDBAdapter, ReadonlyQueryExecutor, SQLiteReadonlyDBAdapter
 
 
-# Product/demo default must be runnable without a company database.
-# Use DATA_AGENT_DB_MODE=mock/sqlite/postgres... explicitly in tests or prod when needed.
-DEFAULT_DB_MODE = "sandbox"
+# A dependency-free mock is the legacy/public default.  The richer sandbox
+# dataset remains opt-in so a missing environment setting never changes the
+# established adapter contract or causes unexpected demo data exposure.
+DEFAULT_DB_MODE = "mock"
 
 
 def build_db_adapter(config=None):

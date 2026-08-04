@@ -1,6 +1,6 @@
 # Data Agent - Production Dependencies
 # Core framework
-# FastAPI 0.104–0.109 is not compatible with Starlette 1.x.  Keep this
+# FastAPI 0.104-0.109 is not compatible with Starlette 1.x. Keep this
 # explicit because an unconstrained transitive upgrade previously prevented
 # the production server from importing.
 fastapi>=0.104.0,<0.110.0

@@ -54,7 +54,11 @@ class BaseAnalysisStrategy(object):
         execution_result = execution_result or {}
         evidence_assessment = assess_strategy_evidence(self.name, plan, execution_result)
         if execution_result.get("status") not in (None, "ok") or evidence_assessment.get("row_count", 0) == 0:
-            return build_need_more_data_analysis(self.name, plan, execution_result, evidence_assessment)
+            insufficient = build_need_more_data_analysis(self.name, plan, execution_result, evidence_assessment)
+            quality = (execution_result.get("diagnostics") or {}).get("quality") or {}
+            if quality.get("empty_result"):
+                insufficient["status"] = "insufficient_data"
+            return insufficient
         rows = execution_result.get("results") or execution_result.get("rows") or []
         quality = (execution_result.get("diagnostics") or {}).get("quality") or {}
         result = {
@@ -184,6 +188,8 @@ class AnomalyAnalysisStrategy(BaseAnalysisStrategy):
     def analyze(self, plan, execution_result):
         base = BaseAnalysisStrategy.analyze(self, plan, execution_result)
         if base.get("status") == "need_more_data":
+            if ((execution_result.get("diagnostics") or {}).get("quality") or {}).get("empty_result"):
+                base["status"] = "insufficient_data"
             return base
         evidence_assessment = assess_strategy_evidence(self.name, plan or {}, execution_result or {})
         if any(str(x).startswith("insufficient_rows") or x == "history_window_missing" for x in evidence_assessment.get("reasons") or []):

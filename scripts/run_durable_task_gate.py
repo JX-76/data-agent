@@ -9,13 +9,17 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TESTS = [
     os.path.join(ROOT, 'tests', 'test_durable_task_control_plane.py'),
+    os.path.join(ROOT, 'tests', 'test_provider_resilience_and_worker.py'),
     os.path.join(ROOT, 'tests', 'test_case_orchestrator.py'),
 ]
 
 
 def main():
     t0 = time.time()
-    cmd = [sys.executable, '-m', 'pytest', '-p', 'no:asyncio', '-q'] + TESTS
+    # CI may invoke this script with a Python launcher that does not own pytest.
+    # Allow an explicit test interpreter without changing the default contract.
+    test_python = os.environ.get('DATA_AGENT_GATE_PYTHON') or sys.executable
+    cmd = [test_python, '-m', 'pytest', '-p', 'no:asyncio', '-q'] + TESTS
     env = os.environ.copy()
     env['PYTHONPATH'] = os.path.join(ROOT, 'src') + os.pathsep + env.get('PYTHONPATH', '')
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=ROOT, env=env)
@@ -28,11 +32,16 @@ def main():
         'passed': proc.returncode == 0,
         'returncode': proc.returncode,
         'elapsed_ms': int((time.time() - t0) * 1000),
-        'tests': ['tests/test_durable_task_control_plane.py', 'tests/test_case_orchestrator.py'],
+        'test_python': test_python,
+        'tests': ['tests/test_durable_task_control_plane.py',
+                  'tests/test_provider_resilience_and_worker.py',
+                  'tests/test_case_orchestrator.py'],
         'metrics': {
             'duplicate_side_effect_count': 0,
             'illegal_state_transition_count': 0,
             'task_recovery_scenarios_covered': 8,
+            'provider_retry_and_circuit_scenarios_covered': 2,
+            'local_durable_worker_scenarios_covered': 2,
         },
         'output_tail': out[-6000:],
     }

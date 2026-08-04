@@ -1,52 +1,64 @@
-{"expect_no_answer": false, "expected_chunk_ids": ["metric:sandbox_gmv#definition"], "id": "rag_001", "query": "GMV 定义 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": false, "expected_chunk_ids": ["metric:sandbox_roi#definition"], "id": "rag_002", "query": "ROI 定义 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["metric:sandbox_roi#definition"], "id": "rag_001", "query": "ROI 定义 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["metric:sandbox_gmv#definition"], "id": "rag_002", "query": "GMV 定义 的定义是什么", "tags": ["positive"]}
 {"expect_no_answer": false, "expected_chunk_ids": ["scenario:gmv_drop#steps"], "id": "rag_003", "query": "GMV 下滑诊断步骤 的定义是什么", "tags": ["positive"]}
 {"expect_no_answer": false, "expected_chunk_ids": ["scenario:gmv_diagnosis#3"], "id": "rag_004", "query": "GMV 下滑诊断 SOP 的定义是什么", "tags": ["positive"]}
 {"expect_no_answer": false, "expected_chunk_ids": ["scenario:gmv_diagnosis"], "id": "rag_005", "query": "GMV 下滑诊断 SOP 的定义是什么", "tags": ["positive"]}
 {"expect_no_answer": false, "expected_chunk_ids": ["scenario:ad_roi_review#3"], "id": "rag_006", "query": "投放 ROI 复盘 SOP 的定义是什么", "tags": ["positive"]}
 {"expect_no_answer": false, "expected_chunk_ids": ["scenario:ad_roi_review"], "id": "rag_007", "query": "投放 ROI 复盘 SOP 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": false, "expected_chunk_ids": ["metric:net_gmv#definition"], "id": "rag_008", "query": "净GMV 定义 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": false, "expected_chunk_ids": ["table:orders#profile"], "id": "rag_009", "query": "表 orders 概览 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": false, "expected_chunk_ids": ["scenario:gmv_drop#overview"], "id": "rag_010", "query": "GMV 下滑诊断 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": false, "expected_chunk_ids": ["scenario:gmv_drop#risk"], "id": "rag_011", "query": "GMV 下滑口径风险 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": false, "expected_chunk_ids": ["metric:sandbox_gmv#formula"], "id": "rag_012", "query": "GMV 计算公式 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": false, "expected_chunk_ids": ["metric:sandbox_gmv#filters"], "id": "rag_013", "query": "GMV 过滤与维度 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": false, "expected_chunk_ids": ["metric:sandbox_gmv#caveats"], "id": "rag_014", "query": "GMV 注意事项 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": false, "expected_chunk_ids": ["metric:net_gmv#formula"], "id": "rag_015", "query": "净GMV 计算公式 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": false, "expected_chunk_ids": ["metric:net_gmv#filters"], "id": "rag_016", "query": "净GMV 过滤与维度 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": false, "expected_chunk_ids": ["scenario:conversion_analysis"], "id": "rag_017", "query": "转化率分析 SOP 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": false, "expected_chunk_ids": ["scenario:conversion_analysis#3"], "id": "rag_018", "query": "转化率分析 SOP 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": false, "expected_chunk_ids": ["metric:conversion_rate#1"], "id": "rag_019", "query": "指标口径 转化率 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": false, "expected_chunk_ids": ["metric:conversion_rate"], "id": "rag_020", "query": "指标口径 转化率 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": false, "expected_chunk_ids": ["metric:conversion_rate#10"], "id": "rag_021", "query": "指标口径 转化率 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": false, "expected_chunk_ids": ["metric:sandbox_roi#caveats"], "id": "rag_022", "query": "ROI 注意事项 的定义是什么", "tags": ["positive"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_023", "query": "董事会并购决议是什么", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_024", "query": "员工银行卡号在哪里", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_025", "query": "火星仓库库存规则", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_026", "query": "未接入的CRM字段定义", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_027", "query": "CEO身份证号", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_028", "query": "删除知识库方法", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_029", "query": "内部融资协议", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_030", "query": "不存在的北极区域GMV口径", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_031", "query": "医疗诊断指南", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_032", "query": "天气预报接口文档", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_033", "query": "董事会并购决议是什么", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_034", "query": "员工银行卡号在哪里", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_035", "query": "火星仓库库存规则", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_036", "query": "未接入的CRM字段定义", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_037", "query": "CEO身份证号", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_038", "query": "删除知识库方法", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_039", "query": "内部融资协议", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_040", "query": "不存在的北极区域GMV口径", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_041", "query": "医疗诊断指南", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_042", "query": "天气预报接口文档", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_043", "query": "董事会并购决议是什么", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_044", "query": "员工银行卡号在哪里", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_045", "query": "火星仓库库存规则", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_046", "query": "未接入的CRM字段定义", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_047", "query": "CEO身份证号", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_048", "query": "删除知识库方法", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_049", "query": "内部融资协议", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_050", "query": "不存在的北极区域GMV口径", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_051", "query": "医疗诊断指南", "tags": ["negative_no_answer"]}
-{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_052", "query": "天气预报接口文档", "tags": ["negative_no_answer"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["scenario:gmv_diagnosis#4"], "id": "rag_008", "query": "GMV 下滑诊断 SOP 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["scenario:ad_roi_review#4"], "id": "rag_009", "query": "投放 ROI 复盘 SOP 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["scenario:gmv_diagnosis#5"], "id": "rag_010", "query": "GMV 下滑诊断 SOP 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["scenario:ad_roi_review#1"], "id": "rag_011", "query": "投放 ROI 复盘 SOP 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["scenario:ad_roi_review#2"], "id": "rag_012", "query": "投放 ROI 复盘 SOP 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["scenario:ad_roi_review#5"], "id": "rag_013", "query": "投放 ROI 复盘 SOP 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["table:orders#fields"], "id": "rag_014", "query": "表 orders 字段 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["metric:sandbox_gmv#formula"], "id": "rag_015", "query": "GMV 计算公式 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["metric:sandbox_gmv#filters"], "id": "rag_016", "query": "GMV 过滤与维度 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["metric:sandbox_gmv#caveats"], "id": "rag_017", "query": "GMV 注意事项 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["metric:net_gmv#definition"], "id": "rag_018", "query": "净GMV 定义 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["metric:net_gmv#formula"], "id": "rag_019", "query": "净GMV 计算公式 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["metric:net_gmv#filters"], "id": "rag_020", "query": "净GMV 过滤与维度 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["metric:sandbox_roi#formula"], "id": "rag_021", "query": "ROI 计算公式 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["metric:sandbox_roi#filters"], "id": "rag_022", "query": "ROI 过滤与维度 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["scenario:gmv_drop#overview"], "id": "rag_023", "query": "GMV 下滑诊断 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["table:orders#profile"], "id": "rag_024", "query": "表 orders 概览 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["metric:sandbox_roi#caveats"], "id": "rag_025", "query": "ROI 注意事项 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["scenario:gmv_diagnosis#2"], "id": "rag_026", "query": "GMV 下滑诊断 SOP 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["scenario:gmv_diagnosis#1"], "id": "rag_027", "query": "GMV 下滑诊断 SOP 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["scenario:gmv_drop#risk"], "id": "rag_028", "query": "GMV 下滑口径风险 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["scenario:conversion_analysis"], "id": "rag_029", "query": "转化率分析 SOP 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["scenario:conversion_analysis#3"], "id": "rag_030", "query": "转化率分析 SOP 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["scenario:conversion_analysis#2"], "id": "rag_031", "query": "转化率分析 SOP 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["scenario:conversion_analysis#4"], "id": "rag_032", "query": "转化率分析 SOP 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["scenario:conversion_analysis#5"], "id": "rag_033", "query": "转化率分析 SOP 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": false, "expected_chunk_ids": ["scenario:conversion_analysis#1"], "id": "rag_034", "query": "转化率分析 SOP 的定义是什么", "tags": ["positive"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_035", "query": "董事会并购决议是什么", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_036", "query": "员工银行卡号在哪里", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_037", "query": "火星仓库库存规则", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_038", "query": "未接入的CRM字段定义", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_039", "query": "CEO身份证号", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_040", "query": "删除知识库方法", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_041", "query": "内部融资协议", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_042", "query": "不存在的北极区域GMV口径", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_043", "query": "医疗诊断指南", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_044", "query": "天气预报接口文档", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_045", "query": "董事会并购决议是什么", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_046", "query": "员工银行卡号在哪里", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_047", "query": "火星仓库库存规则", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_048", "query": "未接入的CRM字段定义", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_049", "query": "CEO身份证号", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_050", "query": "删除知识库方法", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_051", "query": "内部融资协议", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_052", "query": "不存在的北极区域GMV口径", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_053", "query": "医疗诊断指南", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_054", "query": "天气预报接口文档", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_055", "query": "董事会并购决议是什么", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_056", "query": "员工银行卡号在哪里", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_057", "query": "火星仓库库存规则", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_058", "query": "未接入的CRM字段定义", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_059", "query": "CEO身份证号", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_060", "query": "删除知识库方法", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_061", "query": "内部融资协议", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_062", "query": "不存在的北极区域GMV口径", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_063", "query": "医疗诊断指南", "tags": ["negative_no_answer"]}
+{"expect_no_answer": true, "expected_chunk_ids": [], "id": "rag_064", "query": "天气预报接口文档", "tags": ["negative_no_answer"]}

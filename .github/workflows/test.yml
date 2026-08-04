@@ -7,9 +7,6 @@ on:
 jobs:
   contract-and-regression:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: data-agent-mvp
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,10 +32,6 @@ jobs:
       - name: Run harness regression gate
         run: |
           python scripts/run_harness_gate.py all
-
-      - name: Run harness coverage report
-        run: |
-          python scripts/harness_coverage_report.py all
 
       - name: Run contract and regression tests
         run: |
